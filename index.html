@@ -45,6 +45,7 @@
     letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;cursor:pointer;}
   #floatingPresentBtn:hover{filter:brightness(.92);}
   .app.collapsed #floatingPresentBtn{display:block;}
+  .app.presenting #floatingPresentBtn{display:none;}
 
   .console{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow-y:auto;overflow-x:hidden;transition:opacity .25s,background-color .2s,border-color .2s;
     scrollbar-width:thin;scrollbar-color:var(--dimmer) transparent;}
@@ -196,6 +197,23 @@
   .segThumb{position:absolute;top:3px;bottom:3px;left:3px;width:0;border-radius:6px;
     background:var(--accent);z-index:0;pointer-events:none;
     transition:left .25s cubic-bezier(.4,0,.2,1),width .25s cubic-bezier(.4,0,.2,1);}
+  .chartTypeHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .chartTypeHead label{margin-bottom:0;}
+  .addRuleBtn{width:22px;height:22px;border-radius:6px;border:1px solid var(--line);background:var(--panel);
+    color:var(--dim);font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    padding:0;transition:border-color .15s,color .15s;}
+  .addRuleBtn:hover{border-color:var(--accent);color:var(--accent);}
+  .chartRule{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:10px;
+    background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;}
+  .chartRuleHead{display:flex;gap:8px;align-items:center;}
+  .chartRuleTag{flex:1;min-width:0;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dimmer);}
+  .chartRule select.ruleGroup{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    color:var(--ink);font-family:var(--uiFont);font-size:12px;padding:6px 5px;}
+  .chartRule select.ruleGroup:focus{outline:none;border-color:var(--accent);}
+  .chartRule .segRow{width:100%;}
+  .removeRuleBtn{flex:none;width:22px;height:22px;border-radius:6px;border:1px solid var(--line);background:var(--panel);
+    color:var(--dim);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+  .removeRuleBtn:hover{border-color:var(--hot);color:var(--hot);}
   .segWithDrop{flex:1;position:relative;display:flex;background:none;border-radius:6px;}
   .segWithDrop .seg{border-radius:6px;width:100%;}
   .stylePanel{position:absolute;top:100%;left:0;right:0;display:none;flex-direction:column;gap:1px;
@@ -227,6 +245,16 @@
     box-shadow:0 3px 18px rgba(0,0,0,.6);backdrop-filter:blur(3px);transition:background .15s,border-color .15s,box-shadow .15s;}
   .swLabel.style-minimal{background:none;border:none;box-shadow:none;backdrop-filter:none;padding:2px 4px;}
   .swLabel.style-outline{background:rgba(6,9,16,.3);border-width:1.5px;box-shadow:none;backdrop-filter:none;}
+  #callouts{position:absolute;inset:0;pointer-events:none;}
+  .calloutLines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
+  .calloutLine{fill:none;stroke-width:1.25;stroke-linejoin:round;opacity:.7;}
+  .swLabel.callout{display:flex;align-items:center;}
+  .swLabel.callout .dotSwatch{order:1;}
+  .swLabel.callout .calloutLabelText{order:2;}
+  .swLabel.callout .calloutVal{order:3;margin-left:7px;padding-left:7px;border-left:1px solid rgba(255,255,255,.25);color:var(--dimmer);font-size:10px;font-family:var(--mono);}
+  .swLabel.callout.calloutRight .dotSwatch{order:3;}
+  .swLabel.callout.calloutRight .calloutLabelText{order:2;}
+  .swLabel.callout.calloutRight .calloutVal{order:1;margin-left:0;padding-left:0;border-left:none;margin-right:7px;padding-right:7px;border-right:1px solid rgba(255,255,255,.25);}
   .dotSwatch{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle;box-shadow:0 0 7px currentColor;flex:none;}
   .legendCol{position:absolute;transform:translate(-50%,-50%);max-height:70%;overflow-y:auto;display:none;
     flex-direction:column;gap:9px;pointer-events:auto;cursor:grab;background:rgba(5,7,12,.55);border:1px solid rgba(255,255,255,.07);
@@ -259,7 +287,14 @@
   .vpSubtitle.dragging{cursor:grabbing;background:rgba(255,255,255,.08);transition:none;}
   .vpSubtitle.bold{font-weight:700;}
   .vpSubtitle.italic{font-style:italic;}
-  .vpTitle[contenteditable="true"],.vpSubtitle[contenteditable="true"]{
+  .vpExtraText{position:absolute;text-align:center;white-space:nowrap;
+    font-family:var(--disp);font-weight:500;color:#eaf0fa;
+    text-shadow:0 2px 14px #000;pointer-events:auto;cursor:grab;user-select:none;touch-action:none;
+    padding:4px 10px;border-radius:8px;transition:background .12s;}
+  .vpExtraText:hover{background:rgba(255,255,255,.05);}
+  .vpExtraText.dragging{cursor:grabbing;background:rgba(255,255,255,.08);transition:none;}
+  .app.presenting .vpExtraText{pointer-events:none;cursor:default;}
+  .vpTitle[contenteditable="true"],.vpSubtitle[contenteditable="true"],.vpExtraText[contenteditable="true"]{
     cursor:text;user-select:text;background:rgba(255,255,255,.08);outline:1px solid var(--accent);outline-offset:5px;}
   .resizeHandle{position:absolute;right:-7px;bottom:-7px;width:13px;height:13px;border-radius:3px;
     background:transparent;border:1px solid transparent;cursor:nwse-resize;touch-action:none;}
@@ -268,7 +303,7 @@
   .boxDeleteBtn{position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:50%;
     background:var(--panel);border:1px solid var(--line);color:var(--dim);font-size:12px;line-height:16px;
     text-align:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .12s;}
-  .vpTitle:not(.boxEmpty):hover .boxDeleteBtn,.vpSubtitle:not(.boxEmpty):hover .boxDeleteBtn{opacity:1;pointer-events:auto;}
+  .vpTitle:not(.boxEmpty):hover .boxDeleteBtn,.vpSubtitle:not(.boxEmpty):hover .boxDeleteBtn,.vpExtraText:hover .boxDeleteBtn{opacity:1;pointer-events:auto;}
   .boxDeleteBtn:hover{border-color:var(--accent);color:var(--ink);}
   .app.presenting .boxDeleteBtn{display:none!important;}
   .app.presenting .vpSubtitle{pointer-events:none;cursor:default;}
@@ -381,6 +416,12 @@
       </div>
     </div>
     <div class="field">
+      <div class="chartTypeHead">
+        <label>Extra text <span class="sizeVal">(double-click on the board to edit)</span></label>
+        <button type="button" id="addTextBtn" class="addRuleBtn" title="Add a text box to the board">+</button>
+      </div>
+    </div>
+    <div class="field">
       <label>Label style <span class="sizeVal">(toggle either or both · hover for style)</span></label>
       <div class="segRow" id="labelModeRow">
         <div class="segWithDrop">
@@ -397,6 +438,9 @@
             <button type="button" class="styleOption active" data-style="list">List</button>
             <button type="button" class="styleOption" data-style="chips">Chips</button>
           </div>
+        </div>
+        <div class="segWithDrop">
+          <button class="seg" data-mode="callout" title="Leader line from label to point, with value">Callout</button>
         </div>
       </div>
     </div>
@@ -436,14 +480,11 @@
     <div class="cfoot">
       <div class="warnMsg" id="warnMsg"></div>
       <div class="cfootField">
-        <label>Chart type</label>
-        <div class="segRow slider" id="chartTypeRow">
-          <span class="segThumb"></span>
-          <button class="seg active" data-chart="swarm">Nebula</button>
-          <button class="seg" data-chart="galaxy">Galaxy</button>
-          <button class="seg" data-chart="rowshi">Starlight</button>
-          <button class="seg" data-chart="bar3d">Bars</button>
+        <div class="chartTypeHead">
+          <label>Chart type</label>
+          <button type="button" id="addChartRuleBtn" class="addRuleBtn" title="Mix in another chart type for a specific group">+</button>
         </div>
+        <div id="chartTypeRules"></div>
       </div>
       <div class="cfootField">
         <label>Particle shape</label>
@@ -482,10 +523,13 @@
     <button type="button" id="floatingPresentBtn" title="Present">▶ Present</button>
     <div id="gl"></div>
     <div id="labels"></div>
+    <svg id="calloutLines" class="calloutLines"></svg>
+    <div id="callouts"></div>
     <div id="legendLeft" class="legendCol left"></div>
     <div id="legendRight" class="legendCol right"></div>
     <div class="vpTitle" id="vpTitle"></div>
     <div class="vpSubtitle" id="vpSubtitle"></div>
+    <div id="extraTexts"></div>
     <div class="guideLine" id="guideV"></div>
     <div class="guideLine" id="guideH"></div>
 
@@ -549,12 +593,14 @@ const TITLE_FONTS=[
   {id:"dancing",label:"Dancing Script",css:"'Dancing Script',cursive"}
 ];
 const TITLE_FONT_MAP=Object.fromEntries(TITLE_FONTS.map(f=>[f.id,f.css]));
-const state={ title:"", subtitle:"", labelRings:true, labelLegend:false, titleFont:"disp", titleSize:16, titleColor:"#eaf0fa", titlePos:{x:0.5,y:0.06}, titleBold:false, titleItalic:false,
+const state={ title:"", subtitle:"", labelRings:true, labelLegend:false, labelCallout:false, titleFont:"disp", titleSize:16, titleColor:"#eaf0fa", titlePos:{x:0.5,y:0.06}, titleBold:false, titleItalic:false,
   subtitleFont:"disp", subtitleSize:14, subtitleColor:"#7e8fb0", subtitlePos:{x:0.5,y:0.13}, subtitleBold:false, subtitleItalic:false, labelFont:"disp", labelBold:false, labelItalic:false, labelSize:12, labelColor:"#eaf0fa",
   legendLeftPos:{x:0.08,y:0.5}, legendRightPos:{x:0.92,y:0.5}, ringsStyle:"pill", legendStyle:"list", handPreviewPos:{x:0.85,y:0.78},
-  chartType:"swarm", shape:"tetra", bgTheme:"default",
-  rows:[] };
+  chartTypeRules:[{group:"",chartType:"swarm"}], shape:"tetra", bgTheme:"default",
+  textBoxes:[], rows:[] };
+let TEXTBOX_ID=0;
 function r(label,value,group){ return {id:++ROW_ID,label,value,group:group||""}; }
+const CHART_TYPES=[{id:"swarm",label:"Nebula"},{id:"galaxy",label:"Galaxy"},{id:"rowshi",label:"Starlight"},{id:"neural",label:"Neural"}];
 function groupColors(){ const gs=[...new Set(state.rows.map(x=>x.group.trim()).filter(Boolean))]; const m={}; gs.forEach((g,i)=>m[g]=PALETTE[i%PALETTE.length]); return m; }
 function colorFor(row,gc,idx){ const g=row.group.trim(); return (g&&gc[g]!==undefined)?gc[g]:PALETTE[idx%PALETTE.length]; }
 function hex(c){ return "#"+c.toString(16).padStart(6,"0"); }
@@ -574,16 +620,16 @@ function renderTable(){
        <div class="grpCell"><span class="swatch" style="color:${hex(col)};background:${hex(col)}"></span>
          <input class="grp" value="${escapeHtml(row.group)}" placeholder="group"/></div>
        <button class="del" title="remove">×</button>`;
-    div.querySelector(".lbl").addEventListener("input",e=>{ row.label=e.target.value; rebuildDomains(); });
+    div.querySelector(".lbl").addEventListener("input",e=>{ row.label=e.target.value; renderChartTypeRules(); rebuildDomains(); });
     const val=div.querySelector(".val");
     val.addEventListener("input",e=>{ const n=parseFloat(e.target.value); val.classList.toggle("bad",e.target.value.trim()!==""&&isNaN(n)); row.value=isNaN(n)?0:n; rebuildDomains(); });
-    div.querySelector(".grp").addEventListener("input",e=>{ row.group=e.target.value; renderSwatches(); rebuildDomains(); });
-    div.querySelector(".del").addEventListener("click",()=>{ state.rows=state.rows.filter(x=>x.id!==row.id); renderTable(); rebuildDomains(); });
+    div.querySelector(".grp").addEventListener("input",e=>{ row.group=e.target.value; renderSwatches(); renderChartTypeRules(); rebuildDomains(); });
+    div.querySelector(".del").addEventListener("click",()=>{ state.rows=state.rows.filter(x=>x.id!==row.id); renderTable(); renderChartTypeRules(); rebuildDomains(); });
     rowsEl.appendChild(div);
   });
 }
 function renderSwatches(){ const gc=groupColors(); [...rowsEl.children].forEach((div,idx)=>{ const c=hex(colorFor(state.rows[idx],gc,idx)); const s=div.querySelector(".swatch"); s.style.color=c; s.style.background=c; }); }
-document.getElementById("addRow").addEventListener("click",()=>{ state.rows.push(r("New item",10,"")); renderTable(); rebuildDomains(); });
+document.getElementById("addRow").addEventListener("click",()=>{ state.rows.push(r("New item",10,"")); renderTable(); renderChartTypeRules(); rebuildDomains(); });
 document.getElementById("titleInput").addEventListener("input",e=>{ state.title=e.target.value; setBoxText(document.getElementById("vpTitle"),e.target.value); });
 document.getElementById("subtitleInput").addEventListener("input",e=>{ state.subtitle=e.target.value; setBoxText(document.getElementById("vpSubtitle"),e.target.value); });
 
@@ -899,32 +945,34 @@ subtitleBoldBtn.addEventListener("click",()=>{ state.subtitleBold=!state.subtitl
 subtitleItalicBtn.addEventListener("click",()=>{ state.subtitleItalic=!state.subtitleItalic; applySubtitleStyle(); });
 
 const labelModeRow=document.getElementById("labelModeRow");
+const LABEL_MODE_KEYS={rings:"labelRings",legend:"labelLegend",callout:"labelCallout"};
 function syncLabelModeRowActive(){
   labelModeRow.querySelectorAll(".seg").forEach(b=>{
-    b.classList.toggle("active", b.dataset.mode==="rings" ? state.labelRings : state.labelLegend);
+    b.classList.toggle("active", state[LABEL_MODE_KEYS[b.dataset.mode]]);
   });
 }
 labelModeRow.querySelectorAll(".seg").forEach(btn=>{
   btn.addEventListener("click",()=>{
-    const key = btn.dataset.mode==="rings" ? "labelRings" : "labelLegend";
+    const key = LABEL_MODE_KEYS[btn.dataset.mode];
     state[key] = !state[key];
     syncLabelModeRowActive();
     applyLabelMode();
   });
 });
 function applyLabelMode(){
-  const mode = state.chartType||"swarm";
-  const canRing = mode==="swarm"||mode==="galaxy"||mode==="rowshi"||mode==="bar3d";
-  labelsEl.style.display = (canRing && state.labelRings) ? "" : "none";
-  const on = canRing && state.labelLegend;
+  labelsEl.style.display = state.labelRings ? "" : "none";
+  const on = state.labelLegend;
   legendLeftEl.style.display = (on && legendLeftEl.children.length) ? "flex" : "none";
   legendRightEl.style.display = (on && legendRightEl.children.length) ? "flex" : "none";
+  const co = state.labelCallout;
+  calloutsEl.style.display = co ? "" : "none";
+  calloutLinesEl.style.display = co ? "" : "none";
 }
 
 /* ===================== SLIDES ===================== */
 let SLIDE_ID=0;
-function makeSlide(title,rows,labelRings,labelLegend,titleFont,titleSize,titlePos,labelFont,chartType,shape,bgTheme,subtitle,subtitlePos,subtitleFont,titleColor,subtitleSize,subtitleColor,titleBold,titleItalic,subtitleBold,subtitleItalic,labelBold,labelItalic,labelSize,legendLeftPos,legendRightPos,ringsStyle,legendStyle,labelColor,handPreviewPos){ return {id:++SLIDE_ID,title,rows,labelRings:labelRings===undefined?true:labelRings,labelLegend:!!labelLegend,titleFont:titleFont||"disp",titleSize:titleSize===undefined?16:titleSize,titlePos:titlePos||{x:0.5,y:0.06},labelFont:labelFont||"disp",chartType:chartType||"swarm",shape:shape||"tetra",bgTheme:bgTheme||"default",subtitle:subtitle||"",subtitlePos:subtitlePos||{x:0.5,y:0.13},subtitleFont:subtitleFont||"disp",titleColor:titleColor||"#eaf0fa",subtitleSize:subtitleSize===undefined?14:subtitleSize,subtitleColor:subtitleColor||"#7e8fb0",titleBold:!!titleBold,titleItalic:!!titleItalic,subtitleBold:!!subtitleBold,subtitleItalic:!!subtitleItalic,labelBold:!!labelBold,labelItalic:!!labelItalic,labelSize:labelSize===undefined?12:labelSize,legendLeftPos:legendLeftPos||{x:0.08,y:0.5},legendRightPos:legendRightPos||{x:0.92,y:0.5},ringsStyle:ringsStyle||"pill",legendStyle:legendStyle||"list",labelColor:labelColor||"#eaf0fa",handPreviewPos:handPreviewPos||{x:0.85,y:0.78}}; }
-const slides=[ makeSlide(state.title,state.rows,state.labelRings,state.labelLegend,state.titleFont,state.titleSize,state.titlePos,state.labelFont,state.chartType,state.shape,state.bgTheme,state.subtitle,state.subtitlePos,state.subtitleFont,state.titleColor,state.subtitleSize,state.subtitleColor,state.titleBold,state.titleItalic,state.subtitleBold,state.subtitleItalic,state.labelBold,state.labelItalic,state.labelSize,state.legendLeftPos,state.legendRightPos,state.ringsStyle,state.legendStyle,state.labelColor,state.handPreviewPos) ];
+function makeSlide(title,rows,labelRings,labelLegend,titleFont,titleSize,titlePos,labelFont,chartTypeRules,shape,bgTheme,subtitle,subtitlePos,subtitleFont,titleColor,subtitleSize,subtitleColor,titleBold,titleItalic,subtitleBold,subtitleItalic,labelBold,labelItalic,labelSize,legendLeftPos,legendRightPos,ringsStyle,legendStyle,labelColor,handPreviewPos,textBoxes,labelCallout){ return {id:++SLIDE_ID,title,rows,labelRings:labelRings===undefined?true:labelRings,labelLegend:!!labelLegend,titleFont:titleFont||"disp",titleSize:titleSize===undefined?16:titleSize,titlePos:titlePos||{x:0.5,y:0.06},labelFont:labelFont||"disp",chartTypeRules:chartTypeRules||[{group:"",chartType:"swarm"}],shape:shape||"tetra",bgTheme:bgTheme||"default",subtitle:subtitle||"",subtitlePos:subtitlePos||{x:0.5,y:0.13},subtitleFont:subtitleFont||"disp",titleColor:titleColor||"#eaf0fa",subtitleSize:subtitleSize===undefined?14:subtitleSize,subtitleColor:subtitleColor||"#7e8fb0",titleBold:!!titleBold,titleItalic:!!titleItalic,subtitleBold:!!subtitleBold,subtitleItalic:!!subtitleItalic,labelBold:!!labelBold,labelItalic:!!labelItalic,labelSize:labelSize===undefined?12:labelSize,legendLeftPos:legendLeftPos||{x:0.08,y:0.5},legendRightPos:legendRightPos||{x:0.92,y:0.5},ringsStyle:ringsStyle||"pill",legendStyle:legendStyle||"list",labelColor:labelColor||"#eaf0fa",handPreviewPos:handPreviewPos||{x:0.85,y:0.78},textBoxes:textBoxes||[],labelCallout:!!labelCallout}; }
+const slides=[ makeSlide(state.title,state.rows,state.labelRings,state.labelLegend,state.titleFont,state.titleSize,state.titlePos,state.labelFont,state.chartTypeRules,state.shape,state.bgTheme,state.subtitle,state.subtitlePos,state.subtitleFont,state.titleColor,state.subtitleSize,state.subtitleColor,state.titleBold,state.titleItalic,state.subtitleBold,state.subtitleItalic,state.labelBold,state.labelItalic,state.labelSize,state.legendLeftPos,state.legendRightPos,state.ringsStyle,state.legendStyle,state.labelColor,state.handPreviewPos,state.textBoxes,state.labelCallout) ];
 let currentSlide=0;
 const slideStripEl=document.getElementById("slideStrip");
 function drawThumbText(ctx,w,h){
@@ -948,6 +996,17 @@ function drawThumbText(ctx,w,h){
     ctx.fillText(state.subtitle,p.x*w,p.y*h);
     ctx.restore();
   }
+  state.textBoxes.forEach(tb=>{
+    if(!tb.text) return;
+    ctx.save();
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillStyle=tb.color||"#eaf0fa";
+    ctx.font=(tb.size||20)+"px "+TITLE_FONT_MAP.disp;
+    ctx.shadowColor="rgba(0,0,0,.6)"; ctx.shadowBlur=6;
+    const p=tb.pos||{x:0.5,y:0.5};
+    ctx.fillText(tb.text,p.x*w,p.y*h);
+    ctx.restore();
+  });
 }
 function drawThumbDotText(ctx,dotColor,text,x,y,font,color){
   ctx.save();
@@ -982,6 +1041,26 @@ function drawThumbOverlays(ctx,vpRect,w,h){
     const dcol="#"+new THREE.Color(d.color.r,d.color.g,d.color.b).getHexString();
     drawThumbDotText(ctx,dcol,d.label+"  "+d.value,cx,cy,labelFont,labelColor);
   });
+  if(calloutsEl.style.display!=="none"){
+    ctx.save();
+    calloutLineEls.forEach(line=>{
+      if(!line||line.style.display==="none") return;
+      const x1=parseFloat(line.getAttribute("x1"))*sx, y1=parseFloat(line.getAttribute("y1"))*sy;
+      const x2=parseFloat(line.getAttribute("x2"))*sx, y2=parseFloat(line.getAttribute("y2"))*sy;
+      ctx.strokeStyle=line.style.stroke||"#fff"; ctx.globalAlpha=parseFloat(line.style.opacity)||0.7; ctx.lineWidth=1.25;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    });
+    ctx.restore();
+    calloutEls.forEach((el,i)=>{
+      if(!el||el.style.display==="none") return;
+      const d=DOMAINS[i]; if(!d) return;
+      const dot=el.querySelector(".dotSwatch"); if(!dot) return;
+      const dr=dot.getBoundingClientRect();
+      const cx=(dr.left+dr.width/2-vpRect.left)*sx, cy=(dr.top+dr.height/2-vpRect.top)*sy;
+      const dcol="#"+new THREE.Color(d.color.r,d.color.g,d.color.b).getHexString();
+      drawThumbDotText(ctx,dcol,d.label+"  "+d.value,cx,cy,labelFont,labelColor);
+    });
+  }
 }
 function grabThumb(){
   try{
@@ -997,21 +1076,22 @@ function grabThumb(){
 }
 function captureCurrentSlide(){
   const s=slides[currentSlide];
-  s.title=state.title; s.rows=state.rows; s.labelRings=state.labelRings; s.labelLegend=state.labelLegend; s.titleFont=state.titleFont; s.titleSize=state.titleSize; s.titlePos=state.titlePos; s.labelFont=state.labelFont;
-  s.chartType=state.chartType; s.shape=state.shape; s.bgTheme=state.bgTheme; s.subtitle=state.subtitle; s.subtitlePos=state.subtitlePos; s.subtitleFont=state.subtitleFont; s.titleColor=state.titleColor;
+  s.title=state.title; s.rows=state.rows; s.labelRings=state.labelRings; s.labelLegend=state.labelLegend; s.labelCallout=state.labelCallout; s.titleFont=state.titleFont; s.titleSize=state.titleSize; s.titlePos=state.titlePos; s.labelFont=state.labelFont;
+  s.chartTypeRules=state.chartTypeRules; s.shape=state.shape; s.bgTheme=state.bgTheme; s.subtitle=state.subtitle; s.subtitlePos=state.subtitlePos; s.subtitleFont=state.subtitleFont; s.titleColor=state.titleColor;
   s.subtitleSize=state.subtitleSize; s.subtitleColor=state.subtitleColor;
   s.titleBold=state.titleBold; s.titleItalic=state.titleItalic; s.subtitleBold=state.subtitleBold; s.subtitleItalic=state.subtitleItalic;
   s.labelBold=state.labelBold; s.labelItalic=state.labelItalic; s.labelSize=state.labelSize; s.labelColor=state.labelColor;
   s.legendLeftPos=state.legendLeftPos; s.legendRightPos=state.legendRightPos;
   s.ringsStyle=state.ringsStyle; s.legendStyle=state.legendStyle;
   s.handPreviewPos=state.handPreviewPos;
+  s.textBoxes=state.textBoxes;
   s.thumb=grabThumb();
 }
 function loadSlide(idx){
   currentSlide=idx;
   const s=slides[idx];
-  state.title=s.title; state.rows=s.rows; state.labelRings=s.labelRings; state.labelLegend=s.labelLegend; state.titleFont=s.titleFont; state.titleSize=s.titleSize; state.titlePos=s.titlePos; state.labelFont=s.labelFont;
-  state.chartType=s.chartType; state.shape=s.shape; state.bgTheme=s.bgTheme; state.subtitle=s.subtitle||""; state.subtitlePos=s.subtitlePos||{x:0.5,y:0.13}; state.subtitleFont=s.subtitleFont||"disp"; state.titleColor=s.titleColor||"#eaf0fa";
+  state.title=s.title; state.rows=s.rows; state.labelRings=s.labelRings; state.labelLegend=s.labelLegend; state.labelCallout=!!s.labelCallout; state.titleFont=s.titleFont; state.titleSize=s.titleSize; state.titlePos=s.titlePos; state.labelFont=s.labelFont;
+  state.chartTypeRules=s.chartTypeRules||[{group:"",chartType:"swarm"}]; state.shape=s.shape; state.bgTheme=s.bgTheme; state.subtitle=s.subtitle||""; state.subtitlePos=s.subtitlePos||{x:0.5,y:0.13}; state.subtitleFont=s.subtitleFont||"disp"; state.titleColor=s.titleColor||"#eaf0fa";
   state.labelColor=s.labelColor||"#eaf0fa";
   state.legendLeftPos=s.legendLeftPos||{x:0.08,y:0.5}; state.legendRightPos=s.legendRightPos||{x:0.92,y:0.5};
   state.handPreviewPos=s.handPreviewPos||{x:0.85,y:0.78};
@@ -1020,6 +1100,8 @@ function loadSlide(idx){
   state.titleBold=!!s.titleBold; state.titleItalic=!!s.titleItalic; state.subtitleBold=!!s.subtitleBold; state.subtitleItalic=!!s.subtitleItalic;
   state.labelBold=!!s.labelBold; state.labelItalic=!!s.labelItalic;
   state.subtitleSize=s.subtitleSize===undefined?14:s.subtitleSize; state.subtitleColor=s.subtitleColor||"#7e8fb0";
+  state.textBoxes=s.textBoxes||[];
+  renderExtraTexts();
   document.getElementById("titleInput").value=state.title;
   setBoxText(document.getElementById("vpTitle"),state.title);
   document.getElementById("subtitleInput").value=state.subtitle;
@@ -1052,7 +1134,7 @@ function loadSlide(idx){
   applyLabelColor();
   syncLabelColorGridActive();
   syncRingsStyleRowActive(); syncLegendStyleRowActive();
-  syncChartTypeRowActive(); syncShapeRowActive(); syncBgRowActive();
+  renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive();
   applyShape(); applyBgTheme(); applyChartType();
   cam.theta=0.5; cam.phi=PHI_DEFAULT; cam.r=R_DEF;
   renderTable(); rebuildDomains();
@@ -1161,11 +1243,13 @@ function prevSlide(){ if(currentSlide>0) selectSlide(currentSlide-1); }
 prevSlideBtn.addEventListener("click",prevSlide);
 nextSlideBtn.addEventListener("click",nextSlide);
 function refreshCurrentThumb(){
-  if(presenting||slideDragEl) return;
+  if(presenting||slideDragEl||document.hidden) return;
   slides[currentSlide].thumb=grabThumb();
   renderSlideStrip();
 }
-setInterval(refreshCurrentThumb,2500);
+// reading pixels back from the WebGL canvas (inside grabThumb) forces a GPU flush that can stall
+// or even lose the context on weaker GPUs, especially with a 16k-particle scene — keep this rare
+setInterval(refreshCurrentThumb,8000);
 
 /* ===================== THREE — faithful torus swarm ===================== */
 const glEl=document.getElementById("gl");
@@ -1193,42 +1277,14 @@ function applyShape(){
   mesh.geometry=(SHAPE_GEOMS[state.shape]||SHAPE_GEOMS.tetra)();
   if(old) old.dispose();
 }
-/* lights only matter for the 3D bar chart's shaded meshes — MeshBasicMaterial (particles) ignores them */
 scene.add(new THREE.AmbientLight(0xffffff,0.5));
-const barKeyLight=new THREE.DirectionalLight(0xffffff,0.85); barKeyLight.position.set(60,120,80); scene.add(barKeyLight);
-const barFillLight=new THREE.DirectionalLight(0x5ad1c4,0.4); barFillLight.position.set(-90,50,-70); scene.add(barFillLight);
-const BAR_BASE_Y=-32;
-const barGridHelper=new THREE.GridHelper(280,20,0x5ad1c4,0x1c2b3a);
-barGridHelper.position.y=BAR_BASE_Y; barGridHelper.material.transparent=true; barGridHelper.material.opacity=0.3; barGridHelper.visible=false;
-world.add(barGridHelper);
-const barGroup=new THREE.Group(); world.add(barGroup);
-let barMeshes=[];
-function rebuildBars(){
-  barMeshes.forEach(m=>{
-    m.geometry.dispose(); m.material.dispose();
-    if(m.userData.edges){ m.userData.edges.geometry.dispose(); m.userData.edges.material.dispose(); }
-    barGroup.remove(m);
-  });
-  barMeshes=[];
-  const N=DOMAINS.length; if(!N) return;
-  const spacing=17, totalW=(N-1)*spacing, maxV=Math.max(...DOMAINS.map(d=>d.value),1), maxH=68;
-  DOMAINS.forEach((d,i)=>{
-    const h=Math.max(3,(d.value/maxV)*maxH);
-    const col=new THREE.Color(d.color.r,d.color.g,d.color.b);
-    const geo=new THREE.BoxGeometry(11.5,h,11.5);
-    const mat=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.5,roughness:0.35,metalness:0.15});
-    const m=new THREE.Mesh(geo,mat);
-    m.position.set(i*spacing-totalW/2, BAR_BASE_Y+h/2, 0);
-    const edgeMat=new THREE.LineBasicMaterial({color:col.clone().lerp(new THREE.Color(0xffffff),0.55)});
-    const edges=new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat);
-    m.add(edges); m.userData.edges=edges;
-    barGroup.add(m); barMeshes.push(m);
-    d.barAnchor=new THREE.Vector3(m.position.x, BAR_BASE_Y+h+6, 0);
-  });
-}
 const dummy=new THREE.Object3D(), pColor=new THREE.Color();
 const positions=[]; for(let i=0;i<COUNT;i++) positions.push(new THREE.Vector3((Math.random()-.5)*240,(Math.random()-.5)*240,(Math.random()-.5)*240));
 const regionIndex=new Int16Array(COUNT), armPos=new Float32Array(COUNT);
+/* scatters which particle index lands in which domain's share, so a domain's subset of
+   particles reads as a thinned-out sampling rather than one contiguous chunk (matters for
+   Starlight, whose shape spans the whole particle grid regardless of domain) */
+const PERM=new Int32Array(COUNT); (function(){ const STRIDE=9973; for(let i=0;i<COUNT;i++) PERM[i]=(i*STRIDE)%COUNT; })();
 let DOMAINS=[]; const torusVec=new THREE.Vector3();
 
 /* ---- Galaxy (Milky Way spiral) — arms + colors driven by your rows ---- */
@@ -1238,11 +1294,12 @@ function galaxyParticle(i,gt,out,colorOut){
   const goldenAngle=2.39996323;
   const scatterSeed=Math.sin(i*goldenAngle)*127.1+Math.cos(i*57.3)*311.7;
   let armBase, rNorm, groupColor;
-  if(nDom){
-    const di=regionIndex[i];
-    armBase=(di/nDom)*Math.PI*2.0;
+  if(nDom&&regionIndex[i]>=0){
+    const di=regionIndex[i], d=DOMAINS[di];
+    const gCount=d.galaxyCount||1, gRank=d.galaxyRank||0;
+    armBase=(gRank/gCount)*Math.PI*2.0;
     rNorm=Math.sqrt(armPos[i]);
-    groupColor=DOMAINS[di].color;
+    groupColor=d.color;
   } else {
     const t=i/COUNT, arms=4, lane=Math.floor(t*arms);
     armBase=(lane/arms)*Math.PI*2.0;
@@ -1316,44 +1373,95 @@ function rowshiParticle(i,gt,out,colorOut){
   }
 }
 
+/* ---- Neural (Fibonacci-sphere "brain") — one shared folded shape, shaded by firing/wave pulses ---- */
+const NEURAL_P={scale:45,activity:2.5,separation:5,complexity:8,golden:1.61803398875};
+function neuralPosition(i,gt,out){
+  const p=i/COUNT;
+  const cosVal=Math.max(-1,Math.min(1,1-2*p));
+  const theta=Math.acos(cosVal);
+  const phi=2*Math.PI*i/NEURAL_P.golden;
+  const fold=0.75+0.25*Math.sin(theta*NEURAL_P.complexity)*Math.cos(phi*NEURAL_P.complexity+gt*0.2);
+  const radius=NEURAL_P.scale*fold;
+  let x=radius*Math.sin(theta)*Math.cos(phi);
+  let y=radius*Math.sin(theta)*Math.sin(phi);
+  let z=radius*Math.cos(theta);
+  x+=(x>=0?1:-1)*NEURAL_P.separation;
+  const isTract=(i%60===0)?1:0;
+  x*=(1-0.85*isTract); y*=(1-0.20*isTract); z*=(1-0.50*isTract);
+  const neuronOffset=Math.sin(i*12.9898+i*78.233)*43758.5453;
+  const firingPhase=neuronOffset+gt*NEURAL_P.activity;
+  const spike=Math.pow(Math.max(0,Math.sin(firingPhase)),40);
+  const wave=(Math.sin(y*0.1-gt*1.5)+1)*0.5;
+  const jiggle=0.3*(1-isTract);
+  const jX=Math.sin(gt*5+i)*jiggle, jY=Math.cos(gt*6.2+i*2)*jiggle, jZ=Math.sin(gt*4.1-i)*jiggle;
+  out.set(x+jX,y+jY,z+jZ);
+  return Math.max(0,Math.min(1,0.15+wave*0.25+spike*0.7-isTract*0.05));
+}
+function neuralParticle(i,gt,out,colorOut){
+  const lgt=neuralPosition(i,gt,out);
+  const nDom=DOMAINS.length;
+  if(nDom&&regionIndex[i]>=0){
+    const dom=DOMAINS[regionIndex[i]];
+    colorOut.setRGB(lgt*dom.color.r,lgt*dom.color.g,lgt*dom.color.b);
+  } else {
+    colorOut.setHSL(0.62,0.7,lgt);
+  }
+}
+
 function rebuildDomains(){
   const gc=groupColors();
   const rows=state.rows
     .filter(x=>x.label.trim()!==""||x.group.trim()!==""||x.value!==0)
     .map((x,i)=>x.label.trim()!==""?x:{...x,label:`Item ${i+1}`});
   const N=rows.length;
-  if(!N){ DOMAINS=[]; buildLabels(); rebuildBars(); mesh.visible=false; return; }
+  if(!N){ DOMAINS=[]; buildLabels(); mesh.visible=false; return; }
   const order=rows.map((_,i)=>i).sort((a,b)=>Math.abs(rows[b].value)-Math.abs(rows[a].value));
   const rank=new Array(N); order.forEach((idx,rk)=>rank[idx]=rk);
+  const rules=state.chartTypeRules&&state.chartTypeRules.length?state.chartTypeRules:[{group:"",chartType:"swarm"}];
+  function chartTypeForRow(row){
+    const key=rowKey(row);
+    for(let ri=rules.length-1;ri>=1;ri--){ if(rules[ri].group===key) return rules[ri].chartType||"swarm"; }
+    return rules[0].chartType||"swarm";
+  }
   DOMAINS=rows.map((row,i)=>{
     const t=N>1?rank[i]/(N-1):0, c=new THREE.Color(colorFor(row,gc,i)), s=i*12.9898;
     const rot=makeRotMat((Math.sin(s)*0.5+0.5)*Math.PI*2,(Math.sin(s*1.7)*0.5+0.5)*Math.PI*2,(Math.sin(s*2.3)*0.5+0.5)*Math.PI*2);
     const radius=30+(1-t)*42, tube=7+t*15;
     const anchor=new THREE.Vector3(radius+tube,0,0).applyMatrix3(rot);
-    return { value:Math.max(0,Math.abs(row.value)),radius,tube,speed:2.0-t*1.4,chaos:0.5+t*4.3,rot,color:{r:c.r,g:c.g,b:c.b},label:row.label,anchor };
+    const chartType=chartTypeForRow(row);
+    return { value:Math.max(0,Math.abs(row.value)),radius,tube,speed:2.0-t*1.4,chaos:0.5+t*4.3,rot,color:{r:c.r,g:c.g,b:c.b},label:row.label,anchor,chartType };
   });
+
+  // galaxy arm spacing should only consider domains actually rendered as galaxy, not every domain
+  const galaxyDomains=DOMAINS.filter(d=>d.chartType==="galaxy");
+  galaxyDomains.forEach((d,gi)=>{ d.galaxyRank=gi; d.galaxyCount=galaxyDomains.length; });
+
   const totalV=DOMAINS.reduce((s,d)=>s+d.value,0)||1;
   let cum=0; const cumArr=DOMAINS.map(d=>(cum+=d.value/totalV));
   DOMAINS.forEach((d,di)=>{
     const st=di===0?0:cumArr[di-1], en=cumArr[di];
     d.midIndex=Math.min(COUNT-1,Math.max(0,Math.floor(((st+en)/2)*COUNT)));
   });
+
+  // particle allocation, scattered (via PERM) so a domain's subset samples evenly across shared-shape modes like Starlight/Neural
   for(let i=0;i<COUNT;i++){
-    const n=i/COUNT; let di=DOMAINS.length-1;
+    const n=PERM[i]/COUNT; let di=DOMAINS.length-1;
     for(let d=0;d<DOMAINS.length;d++){ if(n<cumArr[d]){ di=d; break; } }
-    regionIndex[i]=di; const st=di===0?0:cumArr[di-1], en=cumArr[di]; armPos[i]=(n-st)/((en-st)||1);
+    regionIndex[i]=di;
+    const st=di===0?0:cumArr[di-1], en=cumArr[di]; armPos[i]=(n-st)/((en-st)||1);
   }
   buildLabels();
-  rebuildBars();
-  mesh.visible = isParticleMode();
+  mesh.visible = true;
 }
 
 /* labels */
 const labelsEl=document.getElementById("labels"),
-      legendLeftEl=document.getElementById("legendLeft"), legendRightEl=document.getElementById("legendRight");
-let labelEls=[];
+      legendLeftEl=document.getElementById("legendLeft"), legendRightEl=document.getElementById("legendRight"),
+      calloutsEl=document.getElementById("callouts"), calloutLinesEl=document.getElementById("calloutLines");
+let labelEls=[], calloutEls=[], calloutLineEls=[];
 function buildLabels(){
   labelsEl.innerHTML=""; labelEls=[]; legendLeftEl.innerHTML=""; legendRightEl.innerHTML="";
+  calloutsEl.innerHTML=""; calloutEls=[]; calloutLinesEl.innerHTML=""; calloutLineEls=[];
   const half=Math.ceil(DOMAINS.length/2);
   DOMAINS.forEach((d,i)=>{ const col=new THREE.Color(d.color.r,d.color.g,d.color.b).getHexString();
     const el=document.createElement("div"); el.className="swLabel";
@@ -1363,7 +1471,16 @@ function buildLabels(){
 
     const li=document.createElement("div"); li.className="legendItem";
     li.innerHTML=`<span class="dotSwatch" style="color:#${col};background:#${col}"></span>${escapeHtml(d.label)}<span class="legendVal">${d.value}</span>`;
-    (i<half?legendLeftEl:legendRightEl).appendChild(li); });
+    (i<half?legendLeftEl:legendRightEl).appendChild(li);
+
+    const ce=document.createElement("div"); ce.className="swLabel callout";
+    ce.style.borderColor=`#${col}88`;
+    ce.innerHTML=`<span class="dotSwatch" style="color:#${col};background:#${col}"></span><span class="calloutLabelText">${escapeHtml(d.label)}</span><span class="calloutVal">${d.value}</span>`;
+    calloutsEl.appendChild(ce); calloutEls.push(ce);
+
+    const line=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    line.setAttribute("class","calloutLine"); line.style.stroke=`#${col}`;
+    calloutLinesEl.appendChild(line); calloutLineEls.push(line); });
   applyLabelMode();
   applyRingsStyle();
   applyLegendStyle();
@@ -1380,7 +1497,7 @@ const BG_THEMES=[
 ];
 const bgRowEl=document.getElementById("bgRow");
 BG_THEMES.forEach(t=>{
-  const b=document.createElement("button"); b.type="button"; b.className="bgSwatch"; b.dataset.bg=t.id; b.title=t.id;
+  const b=document.createElement("button"); b.type="button"; b.className="bgSwatch"; b.dataset.bg=t.id; b.title=t.title||t.id;
   b.style.background=t.swatch;
   bgRowEl.appendChild(b);
 });
@@ -1395,14 +1512,11 @@ bgRowEl.addEventListener("click",e=>{
 });
 
 /* ===================== CHART TYPE / SHAPE ===================== */
-const chartTypeRow=document.getElementById("chartTypeRow"), shapeRow=document.getElementById("shapeRow");
-function is3DMode(){ const t=state.chartType||"swarm"; return t==="swarm"||t==="galaxy"||t==="rowshi"||t==="bar3d"; }
-function isParticleMode(){ const t=state.chartType||"swarm"; return t==="swarm"||t==="galaxy"||t==="rowshi"; }
+const shapeRow=document.getElementById("shapeRow");
+function is3DMode(){ return true; } // every chart type (incl. mixed rules) renders in the 3D scene
 function applyChartType(){
   glEl.style.display = is3DMode() ? "" : "none";
-  mesh.visible = isParticleMode() && DOMAINS.length>0;
-  barGroup.visible = state.chartType==="bar3d";
-  barGridHelper.visible = state.chartType==="bar3d";
+  rebuildDomains(); // re-applies rules to every row, and refreshes mesh/bar visibility
   applyLabelMode();
   if(is3DMode()){ cam.theta=0.5; cam.phi=PHI_DEFAULT; cam.r=R_DEF; }
 }
@@ -1416,18 +1530,60 @@ function positionSegThumb(row){
   place();
   requestAnimationFrame(place);
 }
-function syncChartTypeRowActive(){ chartTypeRow.querySelectorAll(".seg").forEach(b=>b.classList.toggle("active",b.dataset.chart===state.chartType)); positionSegThumb(chartTypeRow); }
-chartTypeRow.querySelectorAll(".seg").forEach(btn=>{
-  btn.addEventListener("click",()=>{ state.chartType=btn.dataset.chart; syncChartTypeRowActive(); applyChartType(); });
+function rowKey(row){ return row.group.trim()||row.label.trim()||("Row "+row.id); }
+function availableGroups(){ return [...new Set(state.rows.map(rowKey))]; }
+const chartTypeRulesEl=document.getElementById("chartTypeRules");
+function renderChartTypeRules(){
+  chartTypeRulesEl.innerHTML="";
+  const groups=availableGroups();
+  state.chartTypeRules.forEach((rule,ri)=>{
+    const isDefault=ri===0;
+    const row=document.createElement("div"); row.className="chartRule";
+    row.innerHTML=
+      `<div class="chartRuleHead">`+
+      (isDefault
+        ? `<span class="chartRuleTag">Default · all rows</span>`
+        : `<span class="chartRuleTag">Applies to group</span>`)+
+      (isDefault ? "" : `<button type="button" class="removeRuleBtn" title="Remove this chart type">×</button>`)+
+      `</div>`+
+      (isDefault ? "" : `<select class="ruleGroup">${groups.map(g=>`<option value="${escapeHtml(g)}"${rule.group===g?" selected":""}>${escapeHtml(g)}</option>`).join("")}</select>`)+
+      `<div class="segRow slider">
+        <span class="segThumb"></span>
+        ${CHART_TYPES.map(t=>`<button type="button" class="seg${rule.chartType===t.id?" active":""}" data-chart="${t.id}">${t.label}</button>`).join("")}
+      </div>`;
+    if(!isDefault){
+      row.querySelector(".ruleGroup").addEventListener("change",e=>{ rule.group=e.target.value; applyChartType(); });
+      row.querySelector(".removeRuleBtn").addEventListener("click",()=>{ state.chartTypeRules.splice(ri,1); renderChartTypeRules(); applyChartType(); });
+    }
+    const segRow=row.querySelector(".segRow");
+    segRow.querySelectorAll(".seg").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        rule.chartType=btn.dataset.chart;
+        segRow.querySelectorAll(".seg").forEach(b=>b.classList.toggle("active",b===btn));
+        positionSegThumb(segRow);
+        applyChartType();
+      });
+    });
+    chartTypeRulesEl.appendChild(row);
+    positionSegThumb(segRow);
+  });
+}
+document.getElementById("addChartRuleBtn").addEventListener("click",()=>{
+  const groups=availableGroups();
+  const used=new Set(state.chartTypeRules.slice(1).map(r=>r.group));
+  const nextGroup=groups.find(g=>!used.has(g))||groups[0]||"";
+  state.chartTypeRules.push({group:nextGroup,chartType:"swarm"});
+  renderChartTypeRules();
+  applyChartType();
 });
 function syncShapeRowActive(){ shapeRow.querySelectorAll(".seg").forEach(b=>b.classList.toggle("active",b.dataset.shape===state.shape)); positionSegThumb(shapeRow); }
 shapeRow.querySelectorAll(".seg").forEach(btn=>{
   btn.addEventListener("click",()=>{ state.shape=btn.dataset.shape; syncShapeRowActive(); applyShape(); });
 });
-positionSegThumb(chartTypeRow);
+renderChartTypeRules();
 positionSegThumb(shapeRow);
 
-window.addEventListener("resize",()=>{ positionSegThumb(chartTypeRow); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); });
+window.addEventListener("resize",()=>{ chartTypeRulesEl.querySelectorAll(".segRow").forEach(positionSegThumb); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); });
 
 const ringsStylePanel=document.getElementById("ringsStylePanel");
 function applyRingsStyle(){
@@ -1471,7 +1627,7 @@ const vpTitleEl=document.getElementById("vpTitle"), vpSubtitleEl=document.getEle
 const guideVEl=document.getElementById("guideV"), guideHEl=document.getElementById("guideH");
 const SNAP=0.018;
 function setBoxText(el,text){ el.textContent=text; el.classList.toggle("boxEmpty",!text); if(el._resizeHandle) el.appendChild(el._resizeHandle); if(el._deleteBtn) el.appendChild(el._deleteBtn); }
-function setupTextBox(el,posGet,posSet,sizeGet,sizeSet,applySize,minSize,maxSize,textSet,syncInput){
+function setupTextBox(el,posGet,posSet,sizeGet,sizeSet,applySize,minSize,maxSize,textSet,syncInput,onRemove){
   const handle=document.createElement("div"); handle.className="resizeHandle"; handle.contentEditable="false"; el.appendChild(handle);
   el._resizeHandle=handle;
   const delBtn=document.createElement("div"); delBtn.className="boxDeleteBtn"; delBtn.contentEditable="false"; delBtn.title="Delete text"; delBtn.textContent="×"; el.appendChild(delBtn);
@@ -1496,6 +1652,7 @@ function setupTextBox(el,posGet,posSet,sizeGet,sizeSet,applySize,minSize,maxSize
   delBtn.addEventListener("click",e=>{
     e.stopPropagation();
     if(presenting) return;
+    if(onRemove){ onRemove(); return; }
     el.classList.remove("fontChosen");
     setBoxText(el,"");
     textSet("");
@@ -1577,6 +1734,27 @@ const applyTitlePos=setupTextBox(vpTitleEl,()=>state.titlePos||{x:0.5,y:0.06},p=
 const applySubtitlePos=setupTextBox(vpSubtitleEl,()=>state.subtitlePos||{x:0.5,y:0.13},p=>state.subtitlePos=p,
   ()=>state.subtitleSize,v=>state.subtitleSize=v,()=>applySubtitleSize(),0,160,
   text=>state.subtitle=text,text=>document.getElementById("subtitleInput").value=text);
+
+/* freeform extra text boxes — user-added, on top of the chart, managed entirely on-canvas */
+const extraTextsEl=document.getElementById("extraTexts");
+function renderExtraTexts(){
+  extraTextsEl.innerHTML="";
+  state.textBoxes.forEach(tb=>{
+    const el=document.createElement("div"); el.className="vpExtraText";
+    el.style.fontSize=(tb.size||20)+"px"; el.style.color=tb.color||"#eaf0fa";
+    extraTextsEl.appendChild(el);
+    const applyPos=setupTextBox(el,()=>tb.pos,p=>tb.pos=p,
+      ()=>tb.size||20,v=>tb.size=v,()=>{ el.style.fontSize=(tb.size||20)+"px"; },0,160,
+      text=>tb.text=text,()=>{},
+      ()=>{ state.textBoxes=state.textBoxes.filter(x=>x.id!==tb.id); renderExtraTexts(); });
+    setBoxText(el,tb.text);
+    applyPos();
+  });
+}
+document.getElementById("addTextBtn").addEventListener("click",()=>{
+  state.textBoxes.push({id:++TEXTBOX_ID,text:"New text",pos:{x:0.5,y:0.3+(state.textBoxes.length%5)*0.08},size:20,color:"#eaf0fa"});
+  renderExtraTexts();
+});
 
 /* draggable legend columns (position only, no resize/edit) */
 function makeDraggableBox(el,getPos,setPos){
@@ -1830,7 +2008,7 @@ let presenting=false;
 const collapseBtn=document.getElementById("collapseBtn"), expandBtn=document.getElementById("expandBtn");
 function setCollapsed(v){
   app.classList.toggle("collapsed",v);
-  setTimeout(()=>{ resize(); positionSegThumb(chartTypeRow); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); },360);
+  setTimeout(()=>{ resize(); chartTypeRulesEl.querySelectorAll(".segRow").forEach(positionSegThumb); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); },360);
 }
 collapseBtn.addEventListener("click",()=>setCollapsed(true));
 expandBtn.addEventListener("click",()=>setCollapsed(false));
@@ -1847,12 +2025,14 @@ const warnMsgEl=document.getElementById("warnMsg"); let warnTimer=null;
 function warn(msg){ warnMsgEl.textContent=msg; warnMsgEl.classList.add("show"); clearTimeout(warnTimer); warnTimer=setTimeout(()=>warnMsgEl.classList.remove("show"),2200); }
 function enterPresent(){
   presenting=true; app.classList.add("presenting"); presentUI.classList.remove("hidden"); idle=true;
-  setTimeout(()=>{ resize(); positionSegThumb(chartTypeRow); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); },360);
-  updateControlHints(); updateSlideNav(); startCamera();
+  // starting the camera/hand-tracking pipeline is heavy (WASM + its own WebGL context) — let the
+  // sidebar-collapse transition and chart resize settle first instead of piling all of it on at once
+  setTimeout(()=>{ resize(); chartTypeRulesEl.querySelectorAll(".segRow").forEach(positionSegThumb); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); startCamera(); },360);
+  updateControlHints(); updateSlideNav();
 }
 function exitPresent(){
   presenting=false; app.classList.remove("presenting"); presentUI.classList.add("hidden");
-  setTimeout(()=>{ resize(); positionSegThumb(chartTypeRow); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); },360);
+  setTimeout(()=>{ resize(); chartTypeRulesEl.querySelectorAll(".segRow").forEach(positionSegThumb); positionSegThumb(shapeRow); positionSegThumb(handPreviewRow); },360);
   if(handPreviewMode==='off') stopCamera(); else updateHandPreviewVisibility();
   updateSlideNav();
 }
@@ -1867,14 +2047,16 @@ function tick(){
 
   if(!is3DMode()) return;
 
-  const gt=clock.getElapsedTime(), nDom=DOMAINS.length, mode=state.chartType||"swarm";
-  if(isParticleMode()){
+  const gt=clock.getElapsedTime();
+  if(mesh.visible){
     for(let i=0;i<COUNT;i++){
-      if(mode==="galaxy"){ galaxyParticle(i,gt,torusVec,pColor); }
-      else if(mode==="rowshi"){ rowshiParticle(i,gt,torusVec,pColor); }
+      const di=regionIndex[i]; if(di<0) continue;
+      const d=DOMAINS[di], type=d.chartType;
+      if(type==="galaxy"){ galaxyParticle(i,gt,torusVec,pColor); }
+      else if(type==="rowshi"){ rowshiParticle(i,gt,torusVec,pColor); }
+      else if(type==="neural"){ neuralParticle(i,gt,torusVec,pColor); }
       else{
-        const di=regionIndex[i]; if(di>=nDom) continue;
-        const d=DOMAINS[di], tLocal=armPos[i], tt=gt*d.speed;
+        const tLocal=armPos[i], tt=gt*d.speed;
         const u=tLocal*Math.PI*2*13.0+tt*0.3, v=tLocal*Math.PI*2*412.0-tt*1.5;
         const harm=Math.sin(u*3.0+tt), dynTube=d.tube*(0.5+0.5*harm);
         const tnoise=Math.sin(i*789.123)*d.chaos, smod=Math.cos(u*5.0)*d.chaos*0.5;
@@ -1898,21 +2080,24 @@ function tick(){
   renderer.render(scene,camera);
 
   if(state.labelRings) positionLabels();
+  if(state.labelCallout) positionCallouts();
 }
 function domainAnchor(d,idx,nDom,gt){
-  const mode=state.chartType||"swarm";
-  if(mode==="bar3d"){
-    return d.barAnchor||torusVec.set(0,0,0);
-  }
-  if(mode==="galaxy"){
-    const armBase=(idx/nDom)*Math.PI*2.0, rNorm=0.92;
+  const type=d.chartType||"swarm";
+  if(type==="galaxy"){
+    const gCount=d.galaxyCount||1, gRank=d.galaxyRank||0;
+    const armBase=(gRank/gCount)*Math.PI*2.0, rNorm=0.92;
     const radius=rNorm*GALAXY_P.scale;
     const spiralAng=armBase+rNorm*GALAXY_P.twist*Math.PI+gt*GALAXY_P.drift;
     const py=(1.0-rNorm)*GALAXY_P.thick*GALAXY_P.core*0.3;
     return torusVec.set(Math.cos(spiralAng)*radius,py,Math.sin(spiralAng)*radius);
   }
-  if(mode==="rowshi"){
+  if(type==="rowshi"){
     rowshiPosition(d.midIndex,gt,torusVec);
+    return torusVec;
+  }
+  if(type==="neural"){
+    neuralPosition(d.midIndex,gt,torusVec);
     return torusVec;
   }
   return d.anchor;
@@ -1939,6 +2124,57 @@ function positionLabels(){
     p.el.style.left=x+"px"; p.el.style.top=y+"px"; p.el.style.opacity=p.opacity;
   });
 }
+function positionCallouts(){
+  const w=glEl.clientWidth,h=glEl.clientHeight, items=[], gt=clock.getElapsedTime(), nDom=DOMAINS.length;
+  const cx=w/2, cy=h/2;
+  DOMAINS.forEach((d,i)=>{
+    const el=calloutEls[i], line=calloutLineEls[i]; if(!el||!line) return;
+    proj.copy(domainAnchor(d,i,nDom,gt)).applyMatrix4(world.matrixWorld).project(camera);
+    if(proj.z>1){ el.style.display="none"; line.style.display="none"; return; }
+    el.style.display="flex"; line.style.display="block";
+    const opacity=0.65+0.35*(1-Math.min(1,Math.max(0,proj.z)));
+    const ax=(proj.x*.5+.5)*w, ay=(-proj.y*.5+.5)*h;
+    items.push({ el, line, ax, ay, z:proj.z, opacity, side: ax<cx?"left":"right" });
+  });
+  if(!items.length) return;
+  // a shared circle around the whole chart -- each line's inner end sits on that circle, in the
+  // direction of its point, rather than reaching in to the exact (often animating) particle
+  const chartR=Math.max(...items.map(p=>Math.hypot(p.ax-cx,p.ay-cy)))*1.04;
+  items.forEach(p=>{
+    const dxc=p.ax-cx, dyc=p.ay-cy, dist=Math.hypot(dxc,dyc)||1, s=chartR/dist;
+    p.bx=cx+dxc*s; p.by=cy+dyc*s;
+  });
+  const gap=26;
+  ["left","right"].forEach(side=>{
+    const col=items.filter(p=>p.side===side).sort((a,b)=>a.by-b.by);
+    if(!col.length) return;
+    // reserve room for the widest label in this column so it can't overflow past the viewport edge
+    const maxBw=Math.max(...col.map(p=>p.el.offsetWidth||60));
+    const rawEdge = side==="left" ? cx-chartR-gap : cx+chartR+gap;
+    const edgeX = side==="left" ? Math.max(40+maxBw,rawEdge) : Math.min(w-40-maxBw,rawEdge);
+    let cursor=-Infinity;
+    col.forEach(p=>{
+      // the value (not the dot+name) sits nearest the attach edge, on both sides, since that's
+      // the number the line is actually pointing to
+      p.el.classList.toggle("calloutRight",side==="right");
+      const bw=p.el.offsetWidth||60, bh=p.el.offsetHeight||20;
+      let y=Math.max(p.by,cursor);
+      y=Math.min(Math.max(y,bh/2+4),h-bh/2-4);
+      cursor=y+bh+6;
+      // pin the label's near-chart edge to the spine and let it grow outward (away from the
+      // chart) with longer text, so the line always meets its right/left edge, not its body
+      const x = side==="left" ? edgeX-bw/2 : edgeX+bw/2;
+      p.el.style.left=x+"px"; p.el.style.top=y+"px"; p.el.style.opacity=p.opacity;
+      // single straight line, no bend -- into the label's near edge (the side facing the
+      // chart), at whatever height the point naturally is, clamped to stay within the label's
+      // own row so it always lands on the label instead of floating past it in either direction
+      const topY=y-bh/2, bottomY=y+bh/2, entryY=Math.min(Math.max(p.by,topY),bottomY);
+      const points = `${p.bx},${p.by} ${edgeX},${entryY}`;
+      p.line.setAttribute("points",points);
+      p.line.style.opacity=p.opacity;
+    });
+  });
+}
 function resize(){
   const w=glEl.clientWidth,h=glEl.clientHeight; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix();
 }
@@ -1948,7 +2184,8 @@ addEventListener("resize",resize);
 /* boot */
 setBoxText(document.getElementById("vpTitle"),state.title);
 setBoxText(document.getElementById("vpSubtitle"),state.subtitle);
-applyShape(); applyBgTheme(); syncChartTypeRowActive(); syncShapeRowActive(); syncBgRowActive(); syncRingsStyleRowActive(); syncLegendStyleRowActive();
+renderExtraTexts();
+applyShape(); applyBgTheme(); renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive(); syncRingsStyleRowActive(); syncLegendStyleRowActive();
 renderTable(); resize(); rebuildDomains(); updateControlHints(); applyLabelMode(); applyTitleFont(); applyTitleSize(); applyTitleStyle(); applyTitleColor(); syncTitleColorGridActive(); applyTitlePos(); applySubtitlePos(); applyLegendLeftPos(); applyLegendRightPos(); applyHandPreviewPos(); applySubtitleFont(); applySubtitleSize(); applySubtitleStyle(); applySubtitleColor(); syncSubtitleColorGridActive(); applyLabelFont(); applyLabelStyle(); applyLabelSize(); applyLabelColor(); syncLabelColorGridActive(); applyChartType(); syncFontPanelActive(); syncSubtitleFontPanelActive(); syncLabelFontPanelActive(); renderSlideStrip(); updateSlideNav(); tick();
 setTimeout(refreshCurrentThumb,400);
 </script>
