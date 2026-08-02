@@ -2186,7 +2186,7 @@ function positionCallouts(){
       // of margin, and eases toward (never below) a safe minimum as the margin shrinks, with no
       // discontinuity at any point. It also naturally preserves each point's own small
       // differences, so adjacent clamped labels still fan out instead of collapsing together.
-      const minLineLen=18, softK=1600;
+      const minLineLen=45, softK=4000;
       const margin = side==="left" ? p.bx-edgeX : edgeX-p.bx;
       const safeMargin = (margin+minLineLen+Math.sqrt((margin-minLineLen)**2+softK))/2;
       const lineBx = side==="left" ? edgeX+safeMargin : edgeX-safeMargin;
