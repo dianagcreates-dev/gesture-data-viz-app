@@ -2159,7 +2159,7 @@ function positionCallouts(){
     const maxBw=Math.max(...col.map(p=>p.el.offsetWidth||60));
     const rawEdge = side==="left" ? cx-chartR-gap : cx+chartR+gap;
     const edgeX = side==="left" ? Math.max(40+maxBw,rawEdge) : Math.min(w-40-maxBw,rawEdge);
-    let cursor=-Infinity, clampCount=0;
+    let cursor=-Infinity;
     col.forEach(p=>{
       // the value (not the dot+name) sits nearest the attach edge, on both sides, since that's
       // the number the line is actually pointing to
@@ -2179,16 +2179,17 @@ function positionCallouts(){
       // when many wide labels force edgeX inward (to avoid overflowing the viewport), a point
       // whose natural x is near the chart's silhouette can end up on the wrong side of edgeX,
       // making the line's start point coincide with or pass its own end point -- a near-zero or
-      // backwards-pointing line that reads as broken/missing. Clamp the line's start (not the
-      // point's real position, just what's drawn) to stay a sane minimum distance on the correct
-      // side of edgeX so it always reads as a real line pointing at the chart. When several
-      // adjacent labels all need clamping, stagger each one a little further out instead of
-      // collapsing them all onto the exact same x -- otherwise their near-identical short
-      // lines, at slightly different heights, visually blend into what looks like one bent
-      // or broken line instead of reading as separate connectors.
-      const minLineLen=18, needsClamp = side==="left" ? p.bx<edgeX+minLineLen : p.bx>edgeX-minLineLen;
-      const clampOffset = needsClamp ? (clampCount++)*7 : 0;
-      const lineBx = side==="left" ? Math.max(p.bx,edgeX+minLineLen+clampOffset) : Math.min(p.bx,edgeX-minLineLen-clampOffset);
+      // backwards-pointing line that reads as broken/missing. A hard clamp (snap to a fixed
+      // minimum the instant the point crosses a threshold) causes visible flicker/snapping as
+      // the chart continuously animates the point back and forth across that line -- so this
+      // uses a smooth minimum instead: it matches the point's real position when there's plenty
+      // of margin, and eases toward (never below) a safe minimum as the margin shrinks, with no
+      // discontinuity at any point. It also naturally preserves each point's own small
+      // differences, so adjacent clamped labels still fan out instead of collapsing together.
+      const minLineLen=18, softK=1600;
+      const margin = side==="left" ? p.bx-edgeX : edgeX-p.bx;
+      const safeMargin = (margin+minLineLen+Math.sqrt((margin-minLineLen)**2+softK))/2;
+      const lineBx = side==="left" ? edgeX+safeMargin : edgeX-safeMargin;
       const points = `${lineBx},${p.by} ${edgeX},${entryY}`;
       p.line.setAttribute("points",points);
       p.line.style.opacity=p.opacity;
