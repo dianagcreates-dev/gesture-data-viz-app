@@ -2144,13 +2144,12 @@ function positionCallouts(){
     items.push({ el, line, ax, ay, z:proj.z, opacity, side: ax<cx?"left":"right" });
   });
   if(!items.length) return;
-  // a shared circle around the whole chart -- each line's inner end sits on that circle, in the
-  // direction of its point, rather than reaching in to the exact (often animating) particle
+  // chartR still sets how far out the label column sits from the chart's center, but each
+  // line's inner end now tracks the point's real projected position (ax,ay) directly, so it
+  // always lands on that item's own color instead of a shared stand-in radius that could
+  // overshoot into a neighboring, differently-colored cluster in overlapping chart types.
   const chartR=Math.max(...items.map(p=>Math.hypot(p.ax-cx,p.ay-cy)))*1.04;
-  items.forEach(p=>{
-    const dxc=p.ax-cx, dyc=p.ay-cy, dist=Math.hypot(dxc,dyc)||1, s=chartR/dist;
-    p.bx=cx+dxc*s; p.by=cy+dyc*s;
-  });
+  items.forEach(p=>{ p.bx=p.ax; p.by=p.ay; });
   const gap=26;
   ["left","right"].forEach(side=>{
     const col=items.filter(p=>p.side===side).sort((a,b)=>a.by-b.by);
