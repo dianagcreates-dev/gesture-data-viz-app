@@ -247,8 +247,10 @@
   .swLabel.style-outline{background:rgba(6,9,16,.3);border-width:1.5px;box-shadow:none;backdrop-filter:none;}
   #callouts{position:absolute;inset:0;pointer-events:none;}
   .calloutLines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
-  .calloutLine{fill:none;stroke-width:1.25;stroke-linejoin:round;opacity:.7;}
-  .swLabel.callout{display:flex;align-items:center;}
+  .calloutLine{fill:none;stroke:#fff;stroke-width:1.25;stroke-linejoin:round;opacity:.7;}
+  .swLabel.callout{display:flex;align-items:center;background:rgba(255,255,255,.10);
+    border-color:rgba(255,255,255,.35);backdrop-filter:blur(14px) saturate(180%);-webkit-backdrop-filter:blur(14px) saturate(180%);
+    box-shadow:0 4px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15);}
   .swLabel.callout .dotSwatch{order:1;margin-right:10px;}
   .swLabel.callout .calloutLabelText{order:2;}
   .swLabel.callout .calloutVal{order:3;margin-left:7px;padding-left:7px;border-left:1px solid rgba(255,255,255,.25);color:var(--dimmer);font-size:10px;font-family:var(--mono);}
@@ -1480,12 +1482,11 @@ function buildLabels(){
     (i<half?legendLeftEl:legendRightEl).appendChild(li);
 
     const ce=document.createElement("div"); ce.className="swLabel callout";
-    ce.style.borderColor=`#${col}88`;
     ce.innerHTML=`<span class="dotSwatch" style="color:#${col};background:#${col}"></span><span class="calloutLabelText">${escapeHtml(d.label)}</span><span class="calloutVal">${d.value}</span>`;
     calloutsEl.appendChild(ce); calloutEls.push(ce);
 
     const line=document.createElementNS("http://www.w3.org/2000/svg","polyline");
-    line.setAttribute("class","calloutLine"); line.style.stroke=`#${col}`;
+    line.setAttribute("class","calloutLine");
     calloutLinesEl.appendChild(line); calloutLineEls.push(line); });
   applyLabelMode();
   applyRingsStyle();
