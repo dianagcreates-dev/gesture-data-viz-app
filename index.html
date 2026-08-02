@@ -422,7 +422,7 @@
       </div>
     </div>
     <div class="field">
-      <label>Label style <span class="sizeVal">(toggle either or both · hover for style)</span></label>
+      <label>Label style <span class="sizeVal">(rings/callout are exclusive · legend can combine · hover for style)</span></label>
       <div class="segRow" id="labelModeRow">
         <div class="segWithDrop">
           <button class="seg active" data-mode="rings">Rings</button>
@@ -955,6 +955,12 @@ labelModeRow.querySelectorAll(".seg").forEach(btn=>{
   btn.addEventListener("click",()=>{
     const key = LABEL_MODE_KEYS[btn.dataset.mode];
     state[key] = !state[key];
+    // rings and callout draw overlapping dot+text labels at the same points, so they can't
+    // both be on -- legend is a separate column layout and can combine with either
+    if(state[key] && (btn.dataset.mode==="rings"||btn.dataset.mode==="callout")){
+      const otherKey = btn.dataset.mode==="rings" ? "labelCallout" : "labelRings";
+      state[otherKey] = false;
+    }
     syncLabelModeRowActive();
     applyLabelMode();
   });
