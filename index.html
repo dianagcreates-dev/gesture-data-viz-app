@@ -2159,7 +2159,7 @@ function positionCallouts(){
     const maxBw=Math.max(...col.map(p=>p.el.offsetWidth||60));
     const rawEdge = side==="left" ? cx-chartR-gap : cx+chartR+gap;
     const edgeX = side==="left" ? Math.max(40+maxBw,rawEdge) : Math.min(w-40-maxBw,rawEdge);
-    let cursor=-Infinity;
+    let cursor=-Infinity, clampCount=0;
     col.forEach(p=>{
       // the value (not the dot+name) sits nearest the attach edge, on both sides, since that's
       // the number the line is actually pointing to
@@ -2181,9 +2181,14 @@ function positionCallouts(){
       // making the line's start point coincide with or pass its own end point -- a near-zero or
       // backwards-pointing line that reads as broken/missing. Clamp the line's start (not the
       // point's real position, just what's drawn) to stay a sane minimum distance on the correct
-      // side of edgeX so it always reads as a real line pointing at the chart.
-      const minLineLen=18;
-      const lineBx = side==="left" ? Math.max(p.bx,edgeX+minLineLen) : Math.min(p.bx,edgeX-minLineLen);
+      // side of edgeX so it always reads as a real line pointing at the chart. When several
+      // adjacent labels all need clamping, stagger each one a little further out instead of
+      // collapsing them all onto the exact same x -- otherwise their near-identical short
+      // lines, at slightly different heights, visually blend into what looks like one bent
+      // or broken line instead of reading as separate connectors.
+      const minLineLen=18, needsClamp = side==="left" ? p.bx<edgeX+minLineLen : p.bx>edgeX-minLineLen;
+      const clampOffset = needsClamp ? (clampCount++)*7 : 0;
+      const lineBx = side==="left" ? Math.max(p.bx,edgeX+minLineLen+clampOffset) : Math.min(p.bx,edgeX-minLineLen-clampOffset);
       const points = `${lineBx},${p.by} ${edgeX},${entryY}`;
       p.line.setAttribute("points",points);
       p.line.style.opacity=p.opacity;
