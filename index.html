@@ -1486,7 +1486,7 @@ function buildLabels(){
     calloutsEl.appendChild(ce); calloutEls.push(ce);
 
     const line=document.createElementNS("http://www.w3.org/2000/svg","polyline");
-    line.setAttribute("class","calloutLine");
+    line.setAttribute("class","calloutLine"); line.style.stroke=`#${col}`;
     calloutLinesEl.appendChild(line); calloutLineEls.push(line); });
   applyLabelMode();
   applyRingsStyle();
