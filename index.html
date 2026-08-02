@@ -2176,7 +2176,15 @@ function positionCallouts(){
       // chart), at whatever height the point naturally is, clamped to stay within the label's
       // own row so it always lands on the label instead of floating past it in either direction
       const topY=y-bh/2, bottomY=y+bh/2, entryY=Math.min(Math.max(p.by,topY),bottomY);
-      const points = `${p.bx},${p.by} ${edgeX},${entryY}`;
+      // when many wide labels force edgeX inward (to avoid overflowing the viewport), a point
+      // whose natural x is near the chart's silhouette can end up on the wrong side of edgeX,
+      // making the line's start point coincide with or pass its own end point -- a near-zero or
+      // backwards-pointing line that reads as broken/missing. Clamp the line's start (not the
+      // point's real position, just what's drawn) to stay a sane minimum distance on the correct
+      // side of edgeX so it always reads as a real line pointing at the chart.
+      const minLineLen=18;
+      const lineBx = side==="left" ? Math.max(p.bx,edgeX+minLineLen) : Math.min(p.bx,edgeX-minLineLen);
+      const points = `${lineBx},${p.by} ${edgeX},${entryY}`;
       p.line.setAttribute("points",points);
       p.line.style.opacity=p.opacity;
     });
