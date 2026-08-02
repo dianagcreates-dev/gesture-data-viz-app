@@ -137,6 +137,9 @@
   .gestureBtn{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
     padding:6px 10px;cursor:pointer;color:var(--ink);font-family:var(--uiFont);font-size:12px;transition:border-color .15s;}
   .gestureBtn:hover{border-color:var(--accent);}
+  .gestureBtn.unassigned{opacity:.55;font-style:italic;}
+  .gestureOption.noneOption{color:var(--dim);border-bottom:1px solid var(--line);border-radius:0;margin-bottom:4px;padding-bottom:8px;}
+  .gestureOption.noneOption:hover{background:none;color:var(--hot);}
   .gesturePanel{position:absolute;top:calc(100% + 6px);right:0;width:170px;max-width:calc(100vw - 48px);display:none;flex-direction:column;gap:2px;
     background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px;z-index:20;}
   .gesturePanel.open{display:flex;}
@@ -1833,17 +1836,21 @@ const GESTURE_ACTIONS=[
   {id:'prev',label:'Previous slide',hint:'previous slide'},
 ];
 let gestureMap={rotate:'point',zoom:'open',reset:'fist',next:'peace',prev:'thumbsup'};
-function gestureLabel(id){ return (GESTURES.find(g=>g.id===id)||{}).label||id; }
-function gestureEmoji(id){ return (GESTURES.find(g=>g.id===id)||{}).emoji||''; }
+function gestureLabel(id){ return id==null ? "None" : (GESTURES.find(g=>g.id===id)||{}).label||id; }
+function gestureEmoji(id){ return id==null ? "" : (GESTURES.find(g=>g.id===id)||{}).emoji||''; }
 function handIcon(id){
-  const span=document.createElement("span"); span.className="handIcon"; span.textContent=gestureEmoji(id);
+  const span=document.createElement("span"); span.className="handIcon"; span.textContent=id==null?"—":gestureEmoji(id);
   return span;
 }
 const gestureRowsEl=document.getElementById("gestureRows");
 function assignGesture(actionId,gestureId){
   if(gestureMap[actionId]===gestureId) return;
-  const otherAction=Object.keys(gestureMap).find(k=>k!==actionId&&gestureMap[k]===gestureId);
-  if(otherAction) gestureMap[otherAction]=gestureMap[actionId];
+  // assigning "None" shouldn't trigger the swap-with-whoever-had-it logic below (multiple
+  // actions can be unassigned at once with no conflict)
+  if(gestureId!=null){
+    const otherAction=Object.keys(gestureMap).find(k=>k!==actionId&&gestureMap[k]===gestureId);
+    if(otherAction) gestureMap[otherAction]=gestureMap[actionId];
+  }
   gestureMap[actionId]=gestureId;
   renderGestureRows();
   updateControlHints();
@@ -1853,14 +1860,22 @@ function renderGestureRows(){
   GESTURE_ACTIONS.forEach(action=>{
     const row=document.createElement("div"); row.className="gestureRow";
     const label=document.createElement("span"); label.className="actionLabel"; label.textContent=action.label;
-    const btn=document.createElement("button"); btn.type="button"; btn.className="gestureBtn";
-    btn.appendChild(handIcon(gestureMap[action.id]));
-    const btnLabel=document.createElement("span"); btnLabel.textContent=gestureLabel(gestureMap[action.id]);
+    const assigned=gestureMap[action.id];
+    const btn=document.createElement("button"); btn.type="button"; btn.className="gestureBtn"+(assigned==null?" unassigned":"");
+    btn.appendChild(handIcon(assigned));
+    const btnLabel=document.createElement("span"); btnLabel.textContent=gestureLabel(assigned);
     btn.appendChild(btnLabel);
     const panel=document.createElement("div"); panel.className="gesturePanel";
+    const noneOpt=document.createElement("button"); noneOpt.type="button";
+    noneOpt.className="gestureOption noneOption"+(assigned==null?" active":"");
+    noneOpt.appendChild(handIcon(null));
+    const noneLabel=document.createElement("span"); noneLabel.textContent="None (turn off)";
+    noneOpt.appendChild(noneLabel);
+    noneOpt.addEventListener("click",e=>{ e.stopPropagation(); assignGesture(action.id,null); });
+    panel.appendChild(noneOpt);
     GESTURES.forEach(g=>{
       const opt=document.createElement("button"); opt.type="button";
-      opt.className="gestureOption"+(gestureMap[action.id]===g.id?" active":"");
+      opt.className="gestureOption"+(assigned===g.id?" active":"");
       opt.appendChild(handIcon(g.id));
       const optLabel=document.createElement("span"); optLabel.textContent=g.label;
       opt.appendChild(optLabel);
@@ -1938,7 +1953,7 @@ const controlHintsEl=document.getElementById("controlHints");
 function loadScript(src){ return new Promise((res,rej)=>{ if(document.querySelector(`script[src="${src}"]`)){res();return;} const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
 function updateControlHints(){
   controlHintsEl.innerHTML = mpReady
-    ? GESTURE_ACTIONS.map(a=>`<b>${gestureLabel(gestureMap[a.id])}</b> ${a.hint}`).join(" &nbsp;·&nbsp; ")
+    ? GESTURE_ACTIONS.filter(a=>gestureMap[a.id]!=null).map(a=>`<b>${gestureLabel(gestureMap[a.id])}</b> ${a.hint}`).join(" &nbsp;·&nbsp; ")
     : "<b>Drag</b> rotate &nbsp;·&nbsp; <b>Scroll</b> zoom &nbsp;·&nbsp; <b>←/→</b> slides";
 }
 async function ensureHandsLoaded(){
