@@ -33,16 +33,16 @@ export default function Home() {
         }}
       />
 
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pt-28 pb-20 text-center sm:pt-36">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-28 pb-20 text-center sm:pt-36">
         <span className="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-medium tracking-wide text-[#7e8fb0]">
           Free · Browser-based · No account needed
         </span>
 
         <h1 className="sr-only">Experience Data in Motion.</h1>
-        <div className="mt-7 h-[150px] w-full max-w-4xl sm:h-[220px]" aria-hidden="true">
+        <div className="mt-7 h-[160px] w-full sm:h-[240px]" aria-hidden="true">
           <CursorDrivenParticleTypography
             text="Experience Data in Motion."
-            fontSize={104}
+            fontSize={125}
             fontFamily="Inter, sans-serif"
             particleSize={1.4}
             particleDensity={3}
