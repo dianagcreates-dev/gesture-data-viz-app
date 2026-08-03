@@ -243,8 +243,19 @@
   .meshDot:hover{border-color:#fff;}
   .meshDot.dragging{cursor:grabbing;}
   .meshPointRow{display:flex;align-items:center;gap:8px;}
-  .meshPointRow input[type=color]{width:28px;height:28px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer;flex:none;}
   .meshPointRow span{flex:1;font-family:var(--uiFont);font-size:12px;color:var(--dim);}
+  .meshColorWrap{position:relative;flex:none;}
+  .meshColorBtn{width:28px;height:28px;border:1px solid var(--line);border-radius:6px;padding:0;cursor:pointer;display:block;}
+  .meshColorPicker{display:none;flex-direction:column;gap:10px;position:absolute;top:calc(100% + 6px);left:0;z-index:30;
+    width:170px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 26px rgba(0,0,0,.5);}
+  .meshColorPicker.open{display:flex;}
+  .meshSVSquare{position:relative;width:100%;height:110px;border-radius:8px;cursor:crosshair;touch-action:none;}
+  .meshSVHandle{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid #fff;
+    box-shadow:0 0 4px rgba(0,0,0,.7);pointer-events:none;}
+  .meshHueSlider{position:relative;width:100%;height:14px;border-radius:7px;cursor:pointer;touch-action:none;
+    background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);}
+  .meshHueHandle{position:absolute;top:-2px;width:6px;height:18px;margin-left:-3px;border-radius:3px;background:#fff;
+    border:1px solid rgba(0,0,0,.4);pointer-events:none;}
 
   .viewport{position:relative;flex:1;min-height:0;overflow:hidden;background:
     radial-gradient(140% 110% at 50% 45%, #0c1730 0%, #06090f 55%, #04060a 100%);cursor:grab;}
@@ -1527,6 +1538,28 @@ function buildMeshCSS(points){
   layers.push("linear-gradient(#03050c,#03050c)");
   return layers.join(",");
 }
+function hexToRgb(hex){ const n=parseInt(hex.replace("#",""),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function rgbToHex(r,g,b){ return "#"+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,"0")).join(""); }
+function rgbToHsv(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  let h=0;
+  if(d!==0){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60; if(h<0) h+=360;
+  }
+  return [h, max===0?0:d/max, max];
+}
+function hsvToRgb(h,s,v){
+  const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c;
+  let r=0,g=0,b=0;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  return [(r+m)*255,(g+m)*255,(b+m)*255];
+}
+function svBackground(h){ return `linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,hsl(${h},100%,50%))`; }
 const bgRowEl=document.getElementById("bgRow"), meshEditorEl=document.getElementById("meshEditor"),
       meshCanvasEl=document.getElementById("meshCanvas"), meshPointRowsEl=document.getElementById("meshPointRows"),
       addMeshPointBtn=document.getElementById("addMeshPointBtn");
@@ -1564,7 +1597,15 @@ function renderMeshEditor(){
   meshPointRowsEl.innerHTML="";
   points.forEach((p,idx)=>{
     const row=document.createElement("div"); row.className="meshPointRow";
-    row.innerHTML=`<input type="color" value="${p.color}" data-idx="${idx}"><span>Point ${idx+1}</span><button type="button" class="del" data-idx="${idx}" title="Remove point">✕</button>`;
+    row.innerHTML=`<div class="meshColorWrap">
+        <button type="button" class="meshColorBtn" data-idx="${idx}" style="background:${p.color}"></button>
+        <div class="meshColorPicker" data-idx="${idx}">
+          <div class="meshSVSquare" data-idx="${idx}"><div class="meshSVHandle"></div></div>
+          <div class="meshHueSlider" data-idx="${idx}"><div class="meshHueHandle"></div></div>
+        </div>
+      </div>
+      <span>Point ${idx+1}</span>
+      <button type="button" class="del" data-idx="${idx}" title="Remove point">✕</button>`;
     meshPointRowsEl.appendChild(row);
   });
   addMeshPointBtn.disabled=points.length>=6;
@@ -1594,25 +1635,83 @@ meshCanvasEl.addEventListener("pointermove",e=>{
 function stopMeshDrag(){ meshDragIdx=null; meshCanvasEl.querySelectorAll(".meshDot.dragging").forEach(d=>d.classList.remove("dragging")); }
 meshCanvasEl.addEventListener("pointerup",stopMeshDrag);
 meshCanvasEl.addEventListener("pointercancel",stopMeshDrag);
-meshPointRowsEl.addEventListener("input",e=>{
-  const inp=e.target.closest('input[type=color]'); if(!inp) return;
-  const idx=+inp.dataset.idx;
-  state.bgMesh.points[idx].color=inp.value;
+let meshPicker={idx:null,h:0,s:0,v:0}, svDragging=false, hueDragging=false;
+function applyMeshPickerColor(){
+  const idx=meshPicker.idx;
+  const [r,g,b]=hsvToRgb(meshPicker.h,meshPicker.s,meshPicker.v);
+  const hex=rgbToHex(r,g,b);
+  state.bgMesh.points[idx].color=hex;
+  const swatchBtn=meshPointRowsEl.querySelector(`.meshColorBtn[data-idx="${idx}"]`);
+  if(swatchBtn) swatchBtn.style.background=hex;
   const dot=meshCanvasEl.querySelector(`.meshDot[data-idx="${idx}"]`);
-  if(dot) dot.style.background=inp.value;
+  if(dot) dot.style.background=hex;
   const css=buildMeshCSS(state.bgMesh.points);
   meshCanvasEl.style.background=css;
   const meshSwatchBtn=bgRowEl.querySelector('[data-bg="mesh"]');
   if(meshSwatchBtn) meshSwatchBtn.style.background=css;
   if(state.bgTheme==="mesh") vp.style.background=css;
-});
+}
+function updateSV(sq,e){
+  const rect=sq.getBoundingClientRect();
+  const x=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));
+  const y=Math.min(1,Math.max(0,(e.clientY-rect.top)/rect.height));
+  meshPicker.s=x; meshPicker.v=1-y;
+  applyMeshPickerColor();
+  const handle=sq.querySelector(".meshSVHandle");
+  handle.style.left=(x*100)+"%"; handle.style.top=(y*100)+"%";
+}
+function updateHue(hueEl,e){
+  const rect=hueEl.getBoundingClientRect();
+  const x=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));
+  meshPicker.h=x*360;
+  applyMeshPickerColor();
+  hueEl.querySelector(".meshHueHandle").style.left=(x*100)+"%";
+  const sq=hueEl.closest(".meshColorPicker").querySelector(".meshSVSquare");
+  sq.style.background=svBackground(meshPicker.h);
+}
 meshPointRowsEl.addEventListener("click",e=>{
+  const swatchBtn=e.target.closest(".meshColorBtn");
+  if(swatchBtn){
+    e.stopPropagation();
+    const idx=+swatchBtn.dataset.idx;
+    const picker=swatchBtn.nextElementSibling;
+    const wasOpen=picker.classList.contains("open");
+    meshPointRowsEl.querySelectorAll(".meshColorPicker.open").forEach(p=>p.classList.remove("open"));
+    if(!wasOpen){
+      picker.classList.add("open");
+      const [r,g,b]=hexToRgb(state.bgMesh.points[idx].color);
+      const [h,s,v]=rgbToHsv(r,g,b);
+      meshPicker={idx,h,s,v};
+      const sq=picker.querySelector(".meshSVSquare");
+      sq.style.background=svBackground(h);
+      sq.querySelector(".meshSVHandle").style.left=(s*100)+"%";
+      sq.querySelector(".meshSVHandle").style.top=((1-v)*100)+"%";
+      picker.querySelector(".meshHueHandle").style.left=(h/360*100)+"%";
+    }
+    return;
+  }
   const btn=e.target.closest(".del"); if(!btn) return;
   if(state.bgMesh.points.length<=2) return;
   state.bgMesh.points.splice(+btn.dataset.idx,1);
   renderMeshEditor();
   if(state.bgTheme==="mesh") applyBgTheme();
 });
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".meshColorWrap")) meshPointRowsEl.querySelectorAll(".meshColorPicker.open").forEach(p=>p.classList.remove("open"));
+});
+meshPointRowsEl.addEventListener("pointerdown",e=>{
+  const sq=e.target.closest(".meshSVSquare");
+  if(sq){ e.stopPropagation(); svDragging=true; sq.setPointerCapture(e.pointerId); updateSV(sq,e); return; }
+  const hue=e.target.closest(".meshHueSlider");
+  if(hue){ e.stopPropagation(); hueDragging=true; hue.setPointerCapture(e.pointerId); updateHue(hue,e); }
+});
+meshPointRowsEl.addEventListener("pointermove",e=>{
+  if(svDragging) updateSV(e.target,e);
+  else if(hueDragging) updateHue(e.target,e);
+});
+function stopMeshColorDrag(){ svDragging=false; hueDragging=false; }
+meshPointRowsEl.addEventListener("pointerup",stopMeshColorDrag);
+meshPointRowsEl.addEventListener("pointercancel",stopMeshColorDrag);
 addMeshPointBtn.addEventListener("click",()=>{
   if(state.bgMesh.points.length>=6) return;
   const palette=["#26f0c8","#5aa9ff","#ff5d8a","#ffd166","#b98cff","#7cff7c"];
