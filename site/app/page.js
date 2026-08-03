@@ -38,12 +38,10 @@ export default function Home() {
           Free · Browser-based · No account needed
         </span>
 
-        <h1 className="mt-7 text-4xl font-semibold tracking-tight sm:text-6xl">
-          Present your data
-        </h1>
-        <div className="mt-2 h-[110px] w-full max-w-2xl sm:h-[150px]">
+        <h1 className="sr-only">Experience Data in Motion.</h1>
+        <div className="mt-7 h-[110px] w-full max-w-2xl sm:h-[150px]" aria-hidden="true">
           <CursorDrivenParticleTypography
-            text="with a wave of your hand"
+            text="Experience Data in Motion."
             fontSize={64}
             fontFamily="Inter, sans-serif"
             particleSize={1.4}
