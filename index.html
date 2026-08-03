@@ -317,14 +317,7 @@
   .vpSubtitle.dragging{cursor:grabbing;background:rgba(255,255,255,.08);transition:none;}
   .vpSubtitle.bold{font-weight:700;}
   .vpSubtitle.italic{font-style:italic;}
-  .vpExtraText{position:absolute;text-align:center;white-space:nowrap;
-    font-family:var(--disp);font-weight:500;color:#eaf0fa;
-    text-shadow:0 2px 14px #000;pointer-events:auto;cursor:grab;user-select:none;touch-action:none;
-    padding:4px 10px;border-radius:8px;transition:background .12s;}
-  .vpExtraText:hover{background:rgba(255,255,255,.05);}
-  .vpExtraText.dragging{cursor:grabbing;background:rgba(255,255,255,.08);transition:none;}
-  .app.presenting .vpExtraText{pointer-events:none;cursor:default;}
-  .vpTitle[contenteditable="true"],.vpSubtitle[contenteditable="true"],.vpExtraText[contenteditable="true"]{
+  .vpTitle[contenteditable="true"],.vpSubtitle[contenteditable="true"]{
     cursor:text;user-select:text;background:rgba(255,255,255,.08);outline:1px solid var(--accent);outline-offset:5px;}
   .resizeHandle{position:absolute;right:-7px;bottom:-7px;width:13px;height:13px;border-radius:3px;
     background:transparent;border:1px solid transparent;cursor:nwse-resize;touch-action:none;}
@@ -446,12 +439,6 @@
       </div>
     </div>
     <div class="field">
-      <div class="chartTypeHead">
-        <label>Extra text <span class="sizeVal">(double-click on the board to edit)</span></label>
-        <button type="button" id="addTextBtn" class="addRuleBtn" title="Add a text box to the board">+</button>
-      </div>
-    </div>
-    <div class="field">
       <label>Label style <span class="sizeVal">(rings/callout are exclusive · legend can combine · hover for style)</span></label>
       <div class="segRow" id="labelModeRow">
         <div class="segWithDrop">
@@ -564,7 +551,6 @@
     <div id="legendRight" class="legendCol right"></div>
     <div class="vpTitle" id="vpTitle"></div>
     <div class="vpSubtitle" id="vpSubtitle"></div>
-    <div id="extraTexts"></div>
     <div class="guideLine" id="guideV"></div>
     <div class="guideLine" id="guideH"></div>
 
@@ -633,8 +619,7 @@ const state={ title:"", subtitle:"", labelRings:true, labelLegend:false, labelCa
   legendLeftPos:{x:0.08,y:0.5}, legendRightPos:{x:0.92,y:0.5}, ringsStyle:"pill", legendStyle:"list", handPreviewPos:{x:0.85,y:0.78},
   chartTypeRules:[{group:"",chartType:"swarm"}], shape:"tetra", bgTheme:"default",
   bgMesh:{points:[{x:.22,y:.28,color:"#26f0c8",r:.6},{x:.78,y:.22,color:"#5aa9ff",r:.6},{x:.5,y:.82,color:"#ff5d8a",r:.6}]},
-  textBoxes:[], rows:[] };
-let TEXTBOX_ID=0;
+  rows:[] };
 function r(label,value,group){ return {id:++ROW_ID,label,value,group:group||""}; }
 const CHART_TYPES=[{id:"swarm",label:"Nebula"},{id:"galaxy",label:"Galaxy"},{id:"rowshi",label:"Starlight"},{id:"neural",label:"Neural"}];
 function groupColors(){ const gs=[...new Set(state.rows.map(x=>x.group.trim()).filter(Boolean))]; const m={}; gs.forEach((g,i)=>m[g]=PALETTE[i%PALETTE.length]); return m; }
@@ -1013,8 +998,8 @@ function applyLabelMode(){
 
 /* ===================== SLIDES ===================== */
 let SLIDE_ID=0;
-function makeSlide(title,rows,labelRings,labelLegend,titleFont,titleSize,titlePos,labelFont,chartTypeRules,shape,bgTheme,subtitle,subtitlePos,subtitleFont,titleColor,subtitleSize,subtitleColor,titleBold,titleItalic,subtitleBold,subtitleItalic,labelBold,labelItalic,labelSize,legendLeftPos,legendRightPos,ringsStyle,legendStyle,labelColor,handPreviewPos,textBoxes,labelCallout,bgMesh){ return {id:++SLIDE_ID,title,rows,labelRings:labelRings===undefined?true:labelRings,labelLegend:!!labelLegend,titleFont:titleFont||"disp",titleSize:titleSize===undefined?16:titleSize,titlePos:titlePos||{x:0.5,y:0.06},labelFont:labelFont||"disp",chartTypeRules:chartTypeRules||[{group:"",chartType:"swarm"}],shape:shape||"tetra",bgTheme:bgTheme||"default",subtitle:subtitle||"",subtitlePos:subtitlePos||{x:0.5,y:0.13},subtitleFont:subtitleFont||"disp",titleColor:titleColor||"#eaf0fa",subtitleSize:subtitleSize===undefined?14:subtitleSize,subtitleColor:subtitleColor||"#7e8fb0",titleBold:!!titleBold,titleItalic:!!titleItalic,subtitleBold:!!subtitleBold,subtitleItalic:!!subtitleItalic,labelBold:!!labelBold,labelItalic:!!labelItalic,labelSize:labelSize===undefined?12:labelSize,legendLeftPos:legendLeftPos||{x:0.08,y:0.5},legendRightPos:legendRightPos||{x:0.92,y:0.5},ringsStyle:ringsStyle||"pill",legendStyle:legendStyle||"list",labelColor:labelColor||"#eaf0fa",handPreviewPos:handPreviewPos||{x:0.85,y:0.78},textBoxes:textBoxes||[],labelCallout:!!labelCallout,bgMesh:bgMesh||defaultBgMesh()}; }
-const slides=[ makeSlide(state.title,state.rows,state.labelRings,state.labelLegend,state.titleFont,state.titleSize,state.titlePos,state.labelFont,state.chartTypeRules,state.shape,state.bgTheme,state.subtitle,state.subtitlePos,state.subtitleFont,state.titleColor,state.subtitleSize,state.subtitleColor,state.titleBold,state.titleItalic,state.subtitleBold,state.subtitleItalic,state.labelBold,state.labelItalic,state.labelSize,state.legendLeftPos,state.legendRightPos,state.ringsStyle,state.legendStyle,state.labelColor,state.handPreviewPos,state.textBoxes,state.labelCallout,state.bgMesh) ];
+function makeSlide(title,rows,labelRings,labelLegend,titleFont,titleSize,titlePos,labelFont,chartTypeRules,shape,bgTheme,subtitle,subtitlePos,subtitleFont,titleColor,subtitleSize,subtitleColor,titleBold,titleItalic,subtitleBold,subtitleItalic,labelBold,labelItalic,labelSize,legendLeftPos,legendRightPos,ringsStyle,legendStyle,labelColor,handPreviewPos,labelCallout,bgMesh){ return {id:++SLIDE_ID,title,rows,labelRings:labelRings===undefined?true:labelRings,labelLegend:!!labelLegend,titleFont:titleFont||"disp",titleSize:titleSize===undefined?16:titleSize,titlePos:titlePos||{x:0.5,y:0.06},labelFont:labelFont||"disp",chartTypeRules:chartTypeRules||[{group:"",chartType:"swarm"}],shape:shape||"tetra",bgTheme:bgTheme||"default",subtitle:subtitle||"",subtitlePos:subtitlePos||{x:0.5,y:0.13},subtitleFont:subtitleFont||"disp",titleColor:titleColor||"#eaf0fa",subtitleSize:subtitleSize===undefined?14:subtitleSize,subtitleColor:subtitleColor||"#7e8fb0",titleBold:!!titleBold,titleItalic:!!titleItalic,subtitleBold:!!subtitleBold,subtitleItalic:!!subtitleItalic,labelBold:!!labelBold,labelItalic:!!labelItalic,labelSize:labelSize===undefined?12:labelSize,legendLeftPos:legendLeftPos||{x:0.08,y:0.5},legendRightPos:legendRightPos||{x:0.92,y:0.5},ringsStyle:ringsStyle||"pill",legendStyle:legendStyle||"list",labelColor:labelColor||"#eaf0fa",handPreviewPos:handPreviewPos||{x:0.85,y:0.78},labelCallout:!!labelCallout,bgMesh:bgMesh||defaultBgMesh()}; }
+const slides=[ makeSlide(state.title,state.rows,state.labelRings,state.labelLegend,state.titleFont,state.titleSize,state.titlePos,state.labelFont,state.chartTypeRules,state.shape,state.bgTheme,state.subtitle,state.subtitlePos,state.subtitleFont,state.titleColor,state.subtitleSize,state.subtitleColor,state.titleBold,state.titleItalic,state.subtitleBold,state.subtitleItalic,state.labelBold,state.labelItalic,state.labelSize,state.legendLeftPos,state.legendRightPos,state.ringsStyle,state.legendStyle,state.labelColor,state.handPreviewPos,state.labelCallout,state.bgMesh) ];
 let currentSlide=0;
 const slideStripEl=document.getElementById("slideStrip");
 function drawThumbText(ctx,w,h){
@@ -1038,17 +1023,6 @@ function drawThumbText(ctx,w,h){
     ctx.fillText(state.subtitle,p.x*w,p.y*h);
     ctx.restore();
   }
-  state.textBoxes.forEach(tb=>{
-    if(!tb.text) return;
-    ctx.save();
-    ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillStyle=tb.color||"#eaf0fa";
-    ctx.font=(tb.size||20)+"px "+TITLE_FONT_MAP.disp;
-    ctx.shadowColor="rgba(0,0,0,.6)"; ctx.shadowBlur=6;
-    const p=tb.pos||{x:0.5,y:0.5};
-    ctx.fillText(tb.text,p.x*w,p.y*h);
-    ctx.restore();
-  });
 }
 function drawThumbDotText(ctx,dotColor,text,x,y,font,color){
   ctx.save();
@@ -1145,7 +1119,6 @@ function captureCurrentSlide(){
   s.legendLeftPos=state.legendLeftPos; s.legendRightPos=state.legendRightPos;
   s.ringsStyle=state.ringsStyle; s.legendStyle=state.legendStyle;
   s.handPreviewPos=state.handPreviewPos;
-  s.textBoxes=state.textBoxes;
   s.thumb=grabThumb();
 }
 function loadSlide(idx){
@@ -1161,8 +1134,6 @@ function loadSlide(idx){
   state.titleBold=!!s.titleBold; state.titleItalic=!!s.titleItalic; state.subtitleBold=!!s.subtitleBold; state.subtitleItalic=!!s.subtitleItalic;
   state.labelBold=!!s.labelBold; state.labelItalic=!!s.labelItalic;
   state.subtitleSize=s.subtitleSize===undefined?14:s.subtitleSize; state.subtitleColor=s.subtitleColor||"#7e8fb0";
-  state.textBoxes=s.textBoxes||[];
-  renderExtraTexts();
   document.getElementById("titleInput").value=state.title;
   setBoxText(document.getElementById("vpTitle"),state.title);
   document.getElementById("subtitleInput").value=state.subtitle;
@@ -2008,27 +1979,6 @@ const applySubtitlePos=setupTextBox(vpSubtitleEl,()=>state.subtitlePos||{x:0.5,y
   ()=>state.subtitleSize,v=>state.subtitleSize=v,()=>applySubtitleSize(),0,160,
   text=>state.subtitle=text,text=>document.getElementById("subtitleInput").value=text);
 
-/* freeform extra text boxes — user-added, on top of the chart, managed entirely on-canvas */
-const extraTextsEl=document.getElementById("extraTexts");
-function renderExtraTexts(){
-  extraTextsEl.innerHTML="";
-  state.textBoxes.forEach(tb=>{
-    const el=document.createElement("div"); el.className="vpExtraText";
-    el.style.fontSize=(tb.size||20)+"px"; el.style.color=tb.color||"#eaf0fa";
-    extraTextsEl.appendChild(el);
-    const applyPos=setupTextBox(el,()=>tb.pos,p=>tb.pos=p,
-      ()=>tb.size||20,v=>tb.size=v,()=>{ el.style.fontSize=(tb.size||20)+"px"; },0,160,
-      text=>tb.text=text,()=>{},
-      ()=>{ state.textBoxes=state.textBoxes.filter(x=>x.id!==tb.id); renderExtraTexts(); });
-    setBoxText(el,tb.text);
-    applyPos();
-  });
-}
-document.getElementById("addTextBtn").addEventListener("click",()=>{
-  state.textBoxes.push({id:++TEXTBOX_ID,text:"New text",pos:{x:0.5,y:0.3+(state.textBoxes.length%5)*0.08},size:20,color:"#eaf0fa"});
-  renderExtraTexts();
-});
-
 /* draggable legend columns (position only, no resize/edit) */
 function makeDraggableBox(el,getPos,setPos){
   let dragging=false;
@@ -2483,7 +2433,6 @@ addEventListener("resize",resize);
 /* boot */
 setBoxText(document.getElementById("vpTitle"),state.title);
 setBoxText(document.getElementById("vpSubtitle"),state.subtitle);
-renderExtraTexts();
 applyShape(); applyBgTheme(); renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive(); renderMeshEditor(); syncRingsStyleRowActive(); syncLegendStyleRowActive();
 renderTable(); resize(); rebuildDomains(); updateControlHints(); applyLabelMode(); applyTitleFont(); applyTitleSize(); applyTitleStyle(); applyTitleColor(); syncTitleColorGridActive(); applyTitlePos(); applySubtitlePos(); applyLegendLeftPos(); applyLegendRightPos(); applyHandPreviewPos(); applySubtitleFont(); applySubtitleSize(); applySubtitleStyle(); applySubtitleColor(); syncSubtitleColorGridActive(); applyLabelFont(); applyLabelStyle(); applyLabelSize(); applyLabelColor(); syncLabelColorGridActive(); applyChartType(); syncFontPanelActive(); syncSubtitleFontPanelActive(); syncLabelFontPanelActive(); renderSlideStrip(); updateSlideNav(); tick();
 setTimeout(refreshCurrentThumb,400);
