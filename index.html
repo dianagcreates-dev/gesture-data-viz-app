@@ -1099,12 +1099,31 @@ function drawThumbOverlays(ctx,vpRect,w,h){
     });
   }
 }
+function paintThumbBackground(ctx,w,h){
+  if(state.bgTheme==="mesh"){
+    ctx.fillStyle="#03050c"; ctx.fillRect(0,0,w,h);
+    const pts=state.bgMesh.points;
+    for(let i=pts.length-1;i>=0;i--){
+      const p=pts[i], cx=p.x*w, cy=p.y*h, r=Math.max(w,h)*0.42;
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0,p.color); g.addColorStop(1,"transparent");
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+    }
+    return;
+  }
+  const t=BG_THEMES.find(x=>x.id===state.bgTheme)||BG_THEMES[0];
+  const cx=w*0.5, cy=h*0.45, r=Math.max(w,h)*0.75;
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  g.addColorStop(0,t.stops[0]); g.addColorStop(0.55,t.stops[1]); g.addColorStop(1,t.stops[2]);
+  ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+}
 function grabThumb(){
   try{
     const w=vp.clientWidth,h=vp.clientHeight;
     if(!w||!h) return renderer.domElement.toDataURL("image/jpeg",0.55);
     const c=document.createElement("canvas"); c.width=w; c.height=h;
     const ctx=c.getContext("2d");
+    paintThumbBackground(ctx,w,h);
     ctx.drawImage(renderer.domElement,0,0,w,h);
     drawThumbOverlays(ctx,vp.getBoundingClientRect(),w,h);
     drawThumbText(ctx,w,h);
@@ -1524,12 +1543,12 @@ function buildLabels(){
 
 /* ===================== BACKGROUND THEMES ===================== */
 const BG_THEMES=[
-  {id:"default",swatch:"#0c1730",css:"radial-gradient(140% 110% at 50% 45%, #050a16 0%, #02040a 55%, #000102 100%)"},
-  {id:"void",swatch:"#2a2d33",css:"radial-gradient(140% 110% at 50% 45%, #0a0b0d 0%, #030304 55%, #000000 100%)"},
-  {id:"purple",swatch:"#4a2170",css:"radial-gradient(140% 110% at 50% 45%, #140a1e 0%, #08040d 55%, #010004 100%)"},
-  {id:"teal",swatch:"#0f6b6e",css:"radial-gradient(140% 110% at 50% 45%, #041416 0%, #020a0b 55%, #000203 100%)"},
-  {id:"crimson",swatch:"#7a1c2e",css:"radial-gradient(140% 110% at 50% 45%, #170a0d 0%, #0b0405 55%, #020001 100%)"},
-  {id:"slate",swatch:"#374a5e",css:"radial-gradient(140% 110% at 50% 45%, #0d1017 0%, #06080c 55%, #010203 100%)"},
+  {id:"default",swatch:"#0c1730",css:"radial-gradient(140% 110% at 50% 45%, #050a16 0%, #02040a 55%, #000102 100%)",stops:["#050a16","#02040a","#000102"]},
+  {id:"void",swatch:"#2a2d33",css:"radial-gradient(140% 110% at 50% 45%, #0a0b0d 0%, #030304 55%, #000000 100%)",stops:["#0a0b0d","#030304","#000000"]},
+  {id:"purple",swatch:"#4a2170",css:"radial-gradient(140% 110% at 50% 45%, #140a1e 0%, #08040d 55%, #010004 100%)",stops:["#140a1e","#08040d","#010004"]},
+  {id:"teal",swatch:"#0f6b6e",css:"radial-gradient(140% 110% at 50% 45%, #041416 0%, #020a0b 55%, #000203 100%)",stops:["#041416","#020a0b","#000203"]},
+  {id:"crimson",swatch:"#7a1c2e",css:"radial-gradient(140% 110% at 50% 45%, #170a0d 0%, #0b0405 55%, #020001 100%)",stops:["#170a0d","#0b0405","#020001"]},
+  {id:"slate",swatch:"#374a5e",css:"radial-gradient(140% 110% at 50% 45%, #0d1017 0%, #06080c 55%, #010203 100%)",stops:["#0d1017","#06080c","#010203"]},
   {id:"mesh",swatch:"conic-gradient(from 180deg,#26f0c8,#5aa9ff,#ff5d8a,#26f0c8)",title:"Custom mesh gradient"}
 ];
 function defaultBgMesh(){ return {points:[{x:.22,y:.28,color:"#26f0c8"},{x:.78,y:.22,color:"#5aa9ff"},{x:.5,y:.82,color:"#ff5d8a"}]}; }
