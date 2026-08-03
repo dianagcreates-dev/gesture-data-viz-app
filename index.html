@@ -236,6 +236,15 @@
     color:var(--accentText);font-family:var(--uiFont);font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
     padding:12px;cursor:pointer;transition:filter .15s;}
   .presentBtn:hover{filter:brightness(.92);}
+  .meshEditor{display:none;flex-direction:column;gap:8px;margin-top:8px;}
+  .meshCanvas{position:relative;width:100%;height:100px;border-radius:10px;border:1px solid var(--line);overflow:hidden;touch-action:none;}
+  .meshDot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid rgba(255,255,255,.85);
+    box-shadow:0 0 8px rgba(0,0,0,.5);cursor:grab;touch-action:none;}
+  .meshDot:hover{border-color:#fff;}
+  .meshDot.dragging{cursor:grabbing;}
+  .meshPointRow{display:flex;align-items:center;gap:8px;}
+  .meshPointRow input[type=color]{width:28px;height:28px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer;flex:none;}
+  .meshPointRow span{flex:1;font-family:var(--uiFont);font-size:12px;color:var(--dim);}
 
   .viewport{position:relative;flex:1;min-height:0;overflow:hidden;background:
     radial-gradient(140% 110% at 50% 45%, #0c1730 0%, #06090f 55%, #04060a 100%);cursor:grab;}
@@ -504,6 +513,11 @@
       <div class="cfootField">
         <label>Background</label>
         <div class="swatchRow" id="bgRow"></div>
+        <div class="meshEditor" id="meshEditor">
+          <div class="meshCanvas" id="meshCanvas"></div>
+          <div id="meshPointRows"></div>
+          <button type="button" class="addRow" id="addMeshPointBtn">+ Add color point</button>
+        </div>
       </div>
       <div class="cfootField">
         <label>Gesture controls <span class="sizeVal">(tap to reassign)</span></label>
@@ -602,6 +616,7 @@ const state={ title:"", subtitle:"", labelRings:true, labelLegend:false, labelCa
   subtitleFont:"disp", subtitleSize:14, subtitleColor:"#7e8fb0", subtitlePos:{x:0.5,y:0.13}, subtitleBold:false, subtitleItalic:false, labelFont:"disp", labelBold:false, labelItalic:false, labelSize:12, labelColor:"#eaf0fa",
   legendLeftPos:{x:0.08,y:0.5}, legendRightPos:{x:0.92,y:0.5}, ringsStyle:"pill", legendStyle:"list", handPreviewPos:{x:0.85,y:0.78},
   chartTypeRules:[{group:"",chartType:"swarm"}], shape:"tetra", bgTheme:"default",
+  bgMesh:{points:[{x:.22,y:.28,color:"#26f0c8"},{x:.78,y:.22,color:"#5aa9ff"},{x:.5,y:.82,color:"#ff5d8a"}]},
   textBoxes:[], rows:[] };
 let TEXTBOX_ID=0;
 function r(label,value,group){ return {id:++ROW_ID,label,value,group:group||""}; }
@@ -982,8 +997,8 @@ function applyLabelMode(){
 
 /* ===================== SLIDES ===================== */
 let SLIDE_ID=0;
-function makeSlide(title,rows,labelRings,labelLegend,titleFont,titleSize,titlePos,labelFont,chartTypeRules,shape,bgTheme,subtitle,subtitlePos,subtitleFont,titleColor,subtitleSize,subtitleColor,titleBold,titleItalic,subtitleBold,subtitleItalic,labelBold,labelItalic,labelSize,legendLeftPos,legendRightPos,ringsStyle,legendStyle,labelColor,handPreviewPos,textBoxes,labelCallout){ return {id:++SLIDE_ID,title,rows,labelRings:labelRings===undefined?true:labelRings,labelLegend:!!labelLegend,titleFont:titleFont||"disp",titleSize:titleSize===undefined?16:titleSize,titlePos:titlePos||{x:0.5,y:0.06},labelFont:labelFont||"disp",chartTypeRules:chartTypeRules||[{group:"",chartType:"swarm"}],shape:shape||"tetra",bgTheme:bgTheme||"default",subtitle:subtitle||"",subtitlePos:subtitlePos||{x:0.5,y:0.13},subtitleFont:subtitleFont||"disp",titleColor:titleColor||"#eaf0fa",subtitleSize:subtitleSize===undefined?14:subtitleSize,subtitleColor:subtitleColor||"#7e8fb0",titleBold:!!titleBold,titleItalic:!!titleItalic,subtitleBold:!!subtitleBold,subtitleItalic:!!subtitleItalic,labelBold:!!labelBold,labelItalic:!!labelItalic,labelSize:labelSize===undefined?12:labelSize,legendLeftPos:legendLeftPos||{x:0.08,y:0.5},legendRightPos:legendRightPos||{x:0.92,y:0.5},ringsStyle:ringsStyle||"pill",legendStyle:legendStyle||"list",labelColor:labelColor||"#eaf0fa",handPreviewPos:handPreviewPos||{x:0.85,y:0.78},textBoxes:textBoxes||[],labelCallout:!!labelCallout}; }
-const slides=[ makeSlide(state.title,state.rows,state.labelRings,state.labelLegend,state.titleFont,state.titleSize,state.titlePos,state.labelFont,state.chartTypeRules,state.shape,state.bgTheme,state.subtitle,state.subtitlePos,state.subtitleFont,state.titleColor,state.subtitleSize,state.subtitleColor,state.titleBold,state.titleItalic,state.subtitleBold,state.subtitleItalic,state.labelBold,state.labelItalic,state.labelSize,state.legendLeftPos,state.legendRightPos,state.ringsStyle,state.legendStyle,state.labelColor,state.handPreviewPos,state.textBoxes,state.labelCallout) ];
+function makeSlide(title,rows,labelRings,labelLegend,titleFont,titleSize,titlePos,labelFont,chartTypeRules,shape,bgTheme,subtitle,subtitlePos,subtitleFont,titleColor,subtitleSize,subtitleColor,titleBold,titleItalic,subtitleBold,subtitleItalic,labelBold,labelItalic,labelSize,legendLeftPos,legendRightPos,ringsStyle,legendStyle,labelColor,handPreviewPos,textBoxes,labelCallout,bgMesh){ return {id:++SLIDE_ID,title,rows,labelRings:labelRings===undefined?true:labelRings,labelLegend:!!labelLegend,titleFont:titleFont||"disp",titleSize:titleSize===undefined?16:titleSize,titlePos:titlePos||{x:0.5,y:0.06},labelFont:labelFont||"disp",chartTypeRules:chartTypeRules||[{group:"",chartType:"swarm"}],shape:shape||"tetra",bgTheme:bgTheme||"default",subtitle:subtitle||"",subtitlePos:subtitlePos||{x:0.5,y:0.13},subtitleFont:subtitleFont||"disp",titleColor:titleColor||"#eaf0fa",subtitleSize:subtitleSize===undefined?14:subtitleSize,subtitleColor:subtitleColor||"#7e8fb0",titleBold:!!titleBold,titleItalic:!!titleItalic,subtitleBold:!!subtitleBold,subtitleItalic:!!subtitleItalic,labelBold:!!labelBold,labelItalic:!!labelItalic,labelSize:labelSize===undefined?12:labelSize,legendLeftPos:legendLeftPos||{x:0.08,y:0.5},legendRightPos:legendRightPos||{x:0.92,y:0.5},ringsStyle:ringsStyle||"pill",legendStyle:legendStyle||"list",labelColor:labelColor||"#eaf0fa",handPreviewPos:handPreviewPos||{x:0.85,y:0.78},textBoxes:textBoxes||[],labelCallout:!!labelCallout,bgMesh:bgMesh||defaultBgMesh()}; }
+const slides=[ makeSlide(state.title,state.rows,state.labelRings,state.labelLegend,state.titleFont,state.titleSize,state.titlePos,state.labelFont,state.chartTypeRules,state.shape,state.bgTheme,state.subtitle,state.subtitlePos,state.subtitleFont,state.titleColor,state.subtitleSize,state.subtitleColor,state.titleBold,state.titleItalic,state.subtitleBold,state.subtitleItalic,state.labelBold,state.labelItalic,state.labelSize,state.legendLeftPos,state.legendRightPos,state.ringsStyle,state.legendStyle,state.labelColor,state.handPreviewPos,state.textBoxes,state.labelCallout,state.bgMesh) ];
 let currentSlide=0;
 const slideStripEl=document.getElementById("slideStrip");
 function drawThumbText(ctx,w,h){
@@ -1088,7 +1103,7 @@ function grabThumb(){
 function captureCurrentSlide(){
   const s=slides[currentSlide];
   s.title=state.title; s.rows=state.rows; s.labelRings=state.labelRings; s.labelLegend=state.labelLegend; s.labelCallout=state.labelCallout; s.titleFont=state.titleFont; s.titleSize=state.titleSize; s.titlePos=state.titlePos; s.labelFont=state.labelFont;
-  s.chartTypeRules=state.chartTypeRules; s.shape=state.shape; s.bgTheme=state.bgTheme; s.subtitle=state.subtitle; s.subtitlePos=state.subtitlePos; s.subtitleFont=state.subtitleFont; s.titleColor=state.titleColor;
+  s.chartTypeRules=state.chartTypeRules; s.shape=state.shape; s.bgTheme=state.bgTheme; s.bgMesh=state.bgMesh; s.subtitle=state.subtitle; s.subtitlePos=state.subtitlePos; s.subtitleFont=state.subtitleFont; s.titleColor=state.titleColor;
   s.subtitleSize=state.subtitleSize; s.subtitleColor=state.subtitleColor;
   s.titleBold=state.titleBold; s.titleItalic=state.titleItalic; s.subtitleBold=state.subtitleBold; s.subtitleItalic=state.subtitleItalic;
   s.labelBold=state.labelBold; s.labelItalic=state.labelItalic; s.labelSize=state.labelSize; s.labelColor=state.labelColor;
@@ -1102,7 +1117,7 @@ function loadSlide(idx){
   currentSlide=idx;
   const s=slides[idx];
   state.title=s.title; state.rows=s.rows; state.labelRings=s.labelRings; state.labelLegend=s.labelLegend; state.labelCallout=!!s.labelCallout; state.titleFont=s.titleFont; state.titleSize=s.titleSize; state.titlePos=s.titlePos; state.labelFont=s.labelFont;
-  state.chartTypeRules=s.chartTypeRules||[{group:"",chartType:"swarm"}]; state.shape=s.shape; state.bgTheme=s.bgTheme; state.subtitle=s.subtitle||""; state.subtitlePos=s.subtitlePos||{x:0.5,y:0.13}; state.subtitleFont=s.subtitleFont||"disp"; state.titleColor=s.titleColor||"#eaf0fa";
+  state.chartTypeRules=s.chartTypeRules||[{group:"",chartType:"swarm"}]; state.shape=s.shape; state.bgTheme=s.bgTheme; state.bgMesh=s.bgMesh||defaultBgMesh(); state.subtitle=s.subtitle||""; state.subtitlePos=s.subtitlePos||{x:0.5,y:0.13}; state.subtitleFont=s.subtitleFont||"disp"; state.titleColor=s.titleColor||"#eaf0fa";
   state.labelColor=s.labelColor||"#eaf0fa";
   state.legendLeftPos=s.legendLeftPos||{x:0.08,y:0.5}; state.legendRightPos=s.legendRightPos||{x:0.92,y:0.5};
   state.handPreviewPos=s.handPreviewPos||{x:0.85,y:0.78};
@@ -1145,7 +1160,7 @@ function loadSlide(idx){
   applyLabelColor();
   syncLabelColorGridActive();
   syncRingsStyleRowActive(); syncLegendStyleRowActive();
-  renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive();
+  renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive(); renderMeshEditor();
   applyShape(); applyBgTheme(); applyChartType();
   cam.theta=0.5; cam.phi=PHI_DEFAULT; cam.r=R_DEF;
   renderTable(); rebuildDomains();
@@ -1503,22 +1518,101 @@ const BG_THEMES=[
   {id:"purple",swatch:"#4a2170",css:"radial-gradient(140% 110% at 50% 45%, #140a1e 0%, #08040d 55%, #010004 100%)"},
   {id:"teal",swatch:"#0f6b6e",css:"radial-gradient(140% 110% at 50% 45%, #041416 0%, #020a0b 55%, #000203 100%)"},
   {id:"crimson",swatch:"#7a1c2e",css:"radial-gradient(140% 110% at 50% 45%, #170a0d 0%, #0b0405 55%, #020001 100%)"},
-  {id:"slate",swatch:"#374a5e",css:"radial-gradient(140% 110% at 50% 45%, #0d1017 0%, #06080c 55%, #010203 100%)"}
+  {id:"slate",swatch:"#374a5e",css:"radial-gradient(140% 110% at 50% 45%, #0d1017 0%, #06080c 55%, #010203 100%)"},
+  {id:"mesh",swatch:"conic-gradient(from 180deg,#26f0c8,#5aa9ff,#ff5d8a,#26f0c8)",title:"Custom mesh gradient"}
 ];
-const bgRowEl=document.getElementById("bgRow");
+function defaultBgMesh(){ return {points:[{x:.22,y:.28,color:"#26f0c8"},{x:.78,y:.22,color:"#5aa9ff"},{x:.5,y:.82,color:"#ff5d8a"}]}; }
+function buildMeshCSS(points){
+  const layers=points.map(p=>`radial-gradient(60% 60% at ${(p.x*100).toFixed(1)}% ${(p.y*100).toFixed(1)}%, ${p.color} 0%, transparent 70%)`);
+  layers.push("linear-gradient(#03050c,#03050c)");
+  return layers.join(",");
+}
+const bgRowEl=document.getElementById("bgRow"), meshEditorEl=document.getElementById("meshEditor"),
+      meshCanvasEl=document.getElementById("meshCanvas"), meshPointRowsEl=document.getElementById("meshPointRows"),
+      addMeshPointBtn=document.getElementById("addMeshPointBtn");
 BG_THEMES.forEach(t=>{
   const b=document.createElement("button"); b.type="button"; b.className="bgSwatch"; b.dataset.bg=t.id; b.title=t.title||t.id;
   b.style.background=t.swatch;
   bgRowEl.appendChild(b);
 });
 function applyBgTheme(){
+  if(state.bgTheme==="mesh"){ vp.style.background=buildMeshCSS(state.bgMesh.points); return; }
   const t=BG_THEMES.find(x=>x.id===state.bgTheme)||BG_THEMES[0];
   vp.style.background=t.css;
 }
-function syncBgRowActive(){ bgRowEl.querySelectorAll(".bgSwatch").forEach(b=>b.classList.toggle("active",b.dataset.bg===state.bgTheme)); }
+function syncBgRowActive(){
+  bgRowEl.querySelectorAll(".bgSwatch").forEach(b=>b.classList.toggle("active",b.dataset.bg===state.bgTheme));
+  meshEditorEl.style.display = state.bgTheme==="mesh" ? "flex" : "none";
+}
 bgRowEl.addEventListener("click",e=>{
   const btn=e.target.closest(".bgSwatch"); if(!btn) return;
   state.bgTheme=btn.dataset.bg; syncBgRowActive(); applyBgTheme();
+  if(btn.dataset.bg==="mesh") renderMeshEditor();
+});
+let meshDragIdx=null;
+function renderMeshEditor(){
+  const points=state.bgMesh.points;
+  meshCanvasEl.style.background=buildMeshCSS(points);
+  const meshSwatchBtn=bgRowEl.querySelector('[data-bg="mesh"]');
+  if(meshSwatchBtn) meshSwatchBtn.style.background=buildMeshCSS(points);
+  meshCanvasEl.querySelectorAll(".meshDot").forEach(d=>d.remove());
+  points.forEach((p,idx)=>{
+    const dot=document.createElement("div"); dot.className="meshDot"; dot.dataset.idx=idx;
+    dot.style.left=(p.x*100)+"%"; dot.style.top=(p.y*100)+"%"; dot.style.background=p.color;
+    meshCanvasEl.appendChild(dot);
+  });
+  meshPointRowsEl.innerHTML="";
+  points.forEach((p,idx)=>{
+    const row=document.createElement("div"); row.className="meshPointRow";
+    row.innerHTML=`<input type="color" value="${p.color}" data-idx="${idx}"><span>Point ${idx+1}</span><button type="button" class="del" data-idx="${idx}" title="Remove point">✕</button>`;
+    meshPointRowsEl.appendChild(row);
+  });
+  addMeshPointBtn.disabled=points.length>=6;
+  addMeshPointBtn.style.opacity=points.length>=6?.4:1;
+}
+meshCanvasEl.addEventListener("pointerdown",e=>{
+  const dot=e.target.closest(".meshDot"); if(!dot) return;
+  meshDragIdx=+dot.dataset.idx;
+  dot.classList.add("dragging");
+  dot.setPointerCapture(e.pointerId);
+});
+meshCanvasEl.addEventListener("pointermove",e=>{
+  if(meshDragIdx==null) return;
+  const rect=meshCanvasEl.getBoundingClientRect();
+  const x=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));
+  const y=Math.min(1,Math.max(0,(e.clientY-rect.top)/rect.height));
+  const pt=state.bgMesh.points[meshDragIdx];
+  pt.x=x; pt.y=y;
+  const dot=meshCanvasEl.querySelector(`.meshDot[data-idx="${meshDragIdx}"]`);
+  if(dot){ dot.style.left=(x*100)+"%"; dot.style.top=(y*100)+"%"; }
+  const css=buildMeshCSS(state.bgMesh.points);
+  meshCanvasEl.style.background=css;
+  const meshSwatchBtn=bgRowEl.querySelector('[data-bg="mesh"]');
+  if(meshSwatchBtn) meshSwatchBtn.style.background=css;
+  if(state.bgTheme==="mesh") vp.style.background=css;
+});
+function stopMeshDrag(){ meshDragIdx=null; meshCanvasEl.querySelectorAll(".meshDot.dragging").forEach(d=>d.classList.remove("dragging")); }
+meshCanvasEl.addEventListener("pointerup",stopMeshDrag);
+meshCanvasEl.addEventListener("pointercancel",stopMeshDrag);
+meshPointRowsEl.addEventListener("input",e=>{
+  const inp=e.target.closest('input[type=color]'); if(!inp) return;
+  state.bgMesh.points[+inp.dataset.idx].color=inp.value;
+  renderMeshEditor();
+  if(state.bgTheme==="mesh") applyBgTheme();
+});
+meshPointRowsEl.addEventListener("click",e=>{
+  const btn=e.target.closest(".del"); if(!btn) return;
+  if(state.bgMesh.points.length<=2) return;
+  state.bgMesh.points.splice(+btn.dataset.idx,1);
+  renderMeshEditor();
+  if(state.bgTheme==="mesh") applyBgTheme();
+});
+addMeshPointBtn.addEventListener("click",()=>{
+  if(state.bgMesh.points.length>=6) return;
+  const palette=["#26f0c8","#5aa9ff","#ff5d8a","#ffd166","#b98cff","#7cff7c"];
+  state.bgMesh.points.push({x:.3+Math.random()*.4,y:.3+Math.random()*.4,color:palette[state.bgMesh.points.length%palette.length]});
+  renderMeshEditor();
+  if(state.bgTheme==="mesh") applyBgTheme();
 });
 
 /* ===================== CHART TYPE / SHAPE ===================== */
@@ -2221,7 +2315,7 @@ addEventListener("resize",resize);
 setBoxText(document.getElementById("vpTitle"),state.title);
 setBoxText(document.getElementById("vpSubtitle"),state.subtitle);
 renderExtraTexts();
-applyShape(); applyBgTheme(); renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive(); syncRingsStyleRowActive(); syncLegendStyleRowActive();
+applyShape(); applyBgTheme(); renderChartTypeRules(); syncShapeRowActive(); syncBgRowActive(); renderMeshEditor(); syncRingsStyleRowActive(); syncLegendStyleRowActive();
 renderTable(); resize(); rebuildDomains(); updateControlHints(); applyLabelMode(); applyTitleFont(); applyTitleSize(); applyTitleStyle(); applyTitleColor(); syncTitleColorGridActive(); applyTitlePos(); applySubtitlePos(); applyLegendLeftPos(); applyLegendRightPos(); applyHandPreviewPos(); applySubtitleFont(); applySubtitleSize(); applySubtitleStyle(); applySubtitleColor(); syncSubtitleColorGridActive(); applyLabelFont(); applyLabelStyle(); applyLabelSize(); applyLabelColor(); syncLabelColorGridActive(); applyChartType(); syncFontPanelActive(); syncSubtitleFontPanelActive(); syncLabelFontPanelActive(); renderSlideStrip(); updateSlideNav(); tick();
 setTimeout(refreshCurrentThumb,400);
 </script>
