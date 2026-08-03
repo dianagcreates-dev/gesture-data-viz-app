@@ -1,3 +1,5 @@
+import { CursorDrivenParticleTypography } from "@/components/CursorDrivenParticleTypography";
+
 const FEATURES = [
   {
     title: "Gesture control",
@@ -38,11 +40,20 @@ export default function Home() {
 
         <h1 className="mt-7 text-4xl font-semibold tracking-tight sm:text-6xl">
           Present your data
-          <br />
-          <span className="bg-gradient-to-r from-[#26f0c8] via-[#5aa9ff] to-[#ff5d8a] bg-clip-text text-transparent">
-            with a wave of your hand
-          </span>
         </h1>
+        <div className="mt-2 h-[110px] w-full max-w-2xl sm:h-[150px]">
+          <CursorDrivenParticleTypography
+            text="with a wave of your hand"
+            fontSize={64}
+            fontFamily="Inter, sans-serif"
+            particleSize={1.4}
+            particleDensity={3}
+            dispersionStrength={18}
+            returnSpeed={0.08}
+            color="#5ad1c4"
+            className="min-h-0"
+          />
+        </div>
 
         <p className="mt-6 max-w-2xl text-lg text-[#9fb0cf] sm:text-xl">
           A gesture-controlled 3D data visualization tool. Turn a table of
