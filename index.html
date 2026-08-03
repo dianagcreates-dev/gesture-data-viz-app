@@ -1606,7 +1606,7 @@ bgRowEl.addEventListener("click",e=>{
   state.bgTheme=btn.dataset.bg; syncBgRowActive(); applyBgTheme();
   if(btn.dataset.bg==="mesh") renderMeshEditor();
 });
-let meshDragIdx=null;
+let meshDragIdx=null, meshDragDot=null, meshDragPending=null, meshDragRAF=null;
 function renderMeshEditor(){
   const points=state.bgMesh.points;
   meshCanvasEl.style.background=buildMeshCSS(points);
@@ -1643,26 +1643,38 @@ function renderMeshEditor(){
 }
 meshCanvasEl.addEventListener("pointerdown",e=>{
   const dot=e.target.closest(".meshDot"); if(!dot) return;
-  meshDragIdx=+dot.dataset.idx;
+  meshDragIdx=+dot.dataset.idx; meshDragDot=dot;
   dot.classList.add("dragging");
   dot.setPointerCapture(e.pointerId);
 });
-meshCanvasEl.addEventListener("pointermove",e=>{
-  if(meshDragIdx==null) return;
-  const rect=meshCanvasEl.getBoundingClientRect();
-  const x=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));
-  const y=Math.min(1,Math.max(0,(e.clientY-rect.top)/rect.height));
+function flushMeshDrag(){
+  meshDragRAF=null;
+  if(!meshDragPending||meshDragIdx==null) return;
+  const {x,y}=meshDragPending;
   const pt=state.bgMesh.points[meshDragIdx];
   pt.x=x; pt.y=y;
-  const dot=meshCanvasEl.querySelector(`.meshDot[data-idx="${meshDragIdx}"]`);
-  if(dot){ dot.style.left=(x*100)+"%"; dot.style.top=(y*100)+"%"; }
+  if(meshDragDot){ meshDragDot.style.left=(x*100)+"%"; meshDragDot.style.top=(y*100)+"%"; }
   const css=buildMeshCSS(state.bgMesh.points);
   meshCanvasEl.style.background=css;
   const meshSwatchBtn=bgRowEl.querySelector('[data-bg="mesh"]');
   if(meshSwatchBtn) meshSwatchBtn.style.background=css;
   if(state.bgTheme==="mesh") vp.style.background=css;
+}
+meshCanvasEl.addEventListener("pointermove",e=>{
+  if(meshDragIdx==null) return;
+  const rect=meshCanvasEl.getBoundingClientRect();
+  meshDragPending={
+    x:Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width)),
+    y:Math.min(1,Math.max(0,(e.clientY-rect.top)/rect.height))
+  };
+  if(!meshDragRAF) meshDragRAF=requestAnimationFrame(flushMeshDrag);
 });
-function stopMeshDrag(){ meshDragIdx=null; meshCanvasEl.querySelectorAll(".meshDot.dragging").forEach(d=>d.classList.remove("dragging")); }
+function stopMeshDrag(){
+  if(meshDragRAF){ cancelAnimationFrame(meshDragRAF); meshDragRAF=null; }
+  flushMeshDrag();
+  meshDragIdx=null; meshDragDot=null; meshDragPending=null;
+  meshCanvasEl.querySelectorAll(".meshDot.dragging").forEach(d=>d.classList.remove("dragging"));
+}
 meshCanvasEl.addEventListener("pointerup",stopMeshDrag);
 meshCanvasEl.addEventListener("pointercancel",stopMeshDrag);
 let meshPicker={idx:null,h:0,s:0,v:0}, svDragging=false, hueDragging=false;
@@ -1735,11 +1747,24 @@ meshPointRowsEl.addEventListener("pointerdown",e=>{
   const hue=e.target.closest(".meshHueSlider");
   if(hue){ e.stopPropagation(); hueDragging=true; hue.setPointerCapture(e.pointerId); updateHue(hue,e); }
 });
+let meshColorRAF=null, meshColorPending=null;
+function flushMeshColorDrag(){
+  meshColorRAF=null;
+  if(!meshColorPending) return;
+  const {el,e}=meshColorPending;
+  if(svDragging) updateSV(el,e);
+  else if(hueDragging) updateHue(el,e);
+}
 meshPointRowsEl.addEventListener("pointermove",e=>{
-  if(svDragging) updateSV(e.target,e);
-  else if(hueDragging) updateHue(e.target,e);
+  if(!svDragging&&!hueDragging) return;
+  meshColorPending={el:e.target,e:{clientX:e.clientX,clientY:e.clientY}};
+  if(!meshColorRAF) meshColorRAF=requestAnimationFrame(flushMeshColorDrag);
 });
-function stopMeshColorDrag(){ svDragging=false; hueDragging=false; }
+function stopMeshColorDrag(){
+  if(meshColorRAF){ cancelAnimationFrame(meshColorRAF); meshColorRAF=null; }
+  flushMeshColorDrag();
+  svDragging=false; hueDragging=false; meshColorPending=null;
+}
 meshPointRowsEl.addEventListener("pointerup",stopMeshColorDrag);
 meshPointRowsEl.addEventListener("pointercancel",stopMeshColorDrag);
 meshPointRowsEl.addEventListener("input",e=>{
