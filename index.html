@@ -516,6 +516,7 @@
           <button class="seg active" data-preview="off">Off</button>
           <button class="seg" data-preview="skeleton">Skeleton</button>
           <button class="seg" data-preview="camera">Camera</button>
+          <button class="seg" data-preview="silhouette">3D</button>
         </div>
       </div>
       <button class="presentBtn" id="presentBtn">▶ Present</button>
@@ -550,6 +551,7 @@
     </div>
     <div id="handPreview" class="handPreview">
       <canvas id="skeletonCanvas" width="180" height="135"></canvas>
+      <canvas id="handSilhouetteCanvas" width="180" height="135"></canvas>
       <div id="handPreviewStatus" class="handPreviewStatus">
         <svg class="handPreviewIcon" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M2 8a2 2 0 0 1 2-2h2.2l1.4-2h6.8l1.4 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
@@ -1901,6 +1903,7 @@ renderGestureRows();
 let handPreviewMode='off';
 const handPreviewEl=document.getElementById("handPreview"), handPreviewRow=document.getElementById("handPreviewRow"),
       skeletonCanvasEl=document.getElementById("skeletonCanvas"), skelCtx=skeletonCanvasEl.getContext("2d"),
+      handSilhouetteCanvasEl=document.getElementById("handSilhouetteCanvas"),
       handPreviewStatusEl=document.getElementById("handPreviewStatus"), handPreviewStatusTextEl=document.getElementById("handPreviewStatusText");
 let cameraError=false;
 function syncHandPreviewRowActive(){
@@ -1917,10 +1920,11 @@ function updateHandPreviewStatus(){
 }
 function updateHandPreviewVisibility(){
   const modeOn=handPreviewMode!=='off';
-  const showBox=modeOn&&mpReady&&(handPreviewMode==='skeleton'||handPreviewMode==='camera');
+  const showBox=modeOn&&mpReady&&(handPreviewMode==='skeleton'||handPreviewMode==='camera'||handPreviewMode==='silhouette');
   handPreviewEl.classList.toggle("show",modeOn);
   if(mpVideo) mpVideo.style.display = (showBox&&handPreviewMode==='camera') ? "block" : "none";
   skeletonCanvasEl.style.display = (showBox&&handPreviewMode==='skeleton') ? "block" : "none";
+  handSilhouetteCanvasEl.style.display = (showBox&&handPreviewMode==='silhouette') ? "block" : "none";
   if(showBox&&handPreviewMode==='camera'&&mpVideo&&mpVideo.parentElement!==handPreviewEl) handPreviewEl.appendChild(mpVideo);
   updateHandPreviewStatus();
 }
@@ -1936,6 +1940,72 @@ function drawSkeleton(){
   });
   skelCtx.fillStyle="#ffffff";
   lm.forEach(p=>{ skelCtx.beginPath(); skelCtx.arc(p.x*w,p.y*h,3,0,Math.PI*2); skelCtx.fill(); });
+}
+
+/* 3D hand silhouette preview -- a small dedicated scene rendering the tracked joints as a
+   solid shape with a fresnel/rim-light shader, so the edges glow while the body stays dark */
+const handScene=new THREE.Scene();
+const handCam=new THREE.PerspectiveCamera(45,180/135,0.1,10);
+handCam.position.set(0,0,3.1);
+const handRenderer=new THREE.WebGLRenderer({canvas:handSilhouetteCanvasEl,alpha:true,antialias:true});
+handRenderer.setSize(180,135,false);
+const rimMaterial=new THREE.ShaderMaterial({
+  uniforms:{ glowColor:{value:new THREE.Color(0x5ad1c4)}, power:{value:2.2} },
+  vertexShader:`
+    varying vec3 vNormal;
+    varying vec3 vViewPosition;
+    void main(){
+      vNormal=normalize(normalMatrix*normal);
+      vec4 mvPosition=modelViewMatrix*vec4(position,1.0);
+      vViewPosition=-mvPosition.xyz;
+      gl_Position=projectionMatrix*mvPosition;
+    }
+  `,
+  fragmentShader:`
+    uniform vec3 glowColor;
+    uniform float power;
+    varying vec3 vNormal;
+    varying vec3 vViewPosition;
+    void main(){
+      vec3 viewDir=normalize(vViewPosition);
+      float fresnel=pow(1.0-clamp(dot(normalize(vNormal),viewDir),0.0,1.0),power);
+      vec3 base=vec3(0.02,0.03,0.05);
+      vec3 color=base+glowColor*fresnel*1.7;
+      float alpha=0.5+fresnel*0.75;
+      gl_FragColor=vec4(color,clamp(alpha,0.0,1.0));
+    }
+  `,
+  transparent:true
+});
+const HAND_SCALE=3, HAND_Z_MULT=2.2;
+const handJointSpheres=Array.from({length:21},()=>{
+  const m=new THREE.Mesh(new THREE.SphereGeometry(0.05,12,12),rimMaterial);
+  handScene.add(m); return m;
+});
+const handBoneCylinders=CONNECTIONS.map(()=>{
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,1,8),rimMaterial);
+  handScene.add(m); return m;
+});
+const handJointVecs=Array.from({length:21},()=>new THREE.Vector3());
+const _handUp=new THREE.Vector3(0,1,0), _handDir=new THREE.Vector3(), _handMid=new THREE.Vector3(), _handQuat=new THREE.Quaternion();
+function renderHandSilhouette(){
+  if(!hand.landmarks) return;
+  const lm=hand.landmarks;
+  for(let i=0;i<21;i++){
+    handJointVecs[i].set((lm[i].x-0.5)*HAND_SCALE,-(lm[i].y-0.5)*HAND_SCALE,-lm[i].z*HAND_SCALE*HAND_Z_MULT);
+    handJointSpheres[i].position.copy(handJointVecs[i]);
+  }
+  CONNECTIONS.forEach(([a,b],i)=>{
+    const pa=handJointVecs[a], pb=handJointVecs[b];
+    _handMid.addVectors(pa,pb).multiplyScalar(0.5);
+    _handDir.subVectors(pb,pa);
+    const len=_handDir.length()||0.0001;
+    _handDir.normalize();
+    _handQuat.setFromUnitVectors(_handUp,_handDir);
+    const cyl=handBoneCylinders[i];
+    cyl.position.copy(_handMid); cyl.quaternion.copy(_handQuat); cyl.scale.set(1,len,1);
+  });
+  handRenderer.render(handScene,handCam);
 }
 handPreviewRow.addEventListener("click",e=>{
   const btn=e.target.closest(".seg"); if(!btn) return;
@@ -2066,6 +2136,7 @@ function tick(){
   if(presenting||mpReady) gestureControl();
   else if(idle) cam.theta+=0.0016;
   if(mpReady&&handPreviewMode==='skeleton') drawSkeleton();
+  if(mpReady&&handPreviewMode==='silhouette') renderHandSilhouette();
 
   if(!is3DMode()) return;
 
