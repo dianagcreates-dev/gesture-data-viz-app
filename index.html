@@ -1596,9 +1596,15 @@ meshCanvasEl.addEventListener("pointerup",stopMeshDrag);
 meshCanvasEl.addEventListener("pointercancel",stopMeshDrag);
 meshPointRowsEl.addEventListener("input",e=>{
   const inp=e.target.closest('input[type=color]'); if(!inp) return;
-  state.bgMesh.points[+inp.dataset.idx].color=inp.value;
-  renderMeshEditor();
-  if(state.bgTheme==="mesh") applyBgTheme();
+  const idx=+inp.dataset.idx;
+  state.bgMesh.points[idx].color=inp.value;
+  const dot=meshCanvasEl.querySelector(`.meshDot[data-idx="${idx}"]`);
+  if(dot) dot.style.background=inp.value;
+  const css=buildMeshCSS(state.bgMesh.points);
+  meshCanvasEl.style.background=css;
+  const meshSwatchBtn=bgRowEl.querySelector('[data-bg="mesh"]');
+  if(meshSwatchBtn) meshSwatchBtn.style.background=css;
+  if(state.bgTheme==="mesh") vp.style.background=css;
 });
 meshPointRowsEl.addEventListener("click",e=>{
   const btn=e.target.closest(".del"); if(!btn) return;
