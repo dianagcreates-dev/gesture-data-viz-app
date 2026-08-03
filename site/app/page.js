@@ -39,10 +39,10 @@ export default function Home() {
         </span>
 
         <h1 className="sr-only">Experience Data in Motion.</h1>
-        <div className="mt-7 h-[130px] w-full max-w-3xl sm:h-[190px]" aria-hidden="true">
+        <div className="mt-7 h-[150px] w-full max-w-4xl sm:h-[220px]" aria-hidden="true">
           <CursorDrivenParticleTypography
             text="Experience Data in Motion."
-            fontSize={88}
+            fontSize={104}
             fontFamily="Inter, sans-serif"
             particleSize={1.4}
             particleDensity={3}
