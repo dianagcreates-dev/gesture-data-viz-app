@@ -332,9 +332,9 @@
   .app.presenting .resizeHandle{display:none!important;}
   .boxDeleteBtn{position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:50%;
     background:var(--panel);border:1px solid var(--line);color:var(--dim);font-size:12px;line-height:16px;
-    text-align:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .12s;}
-  .vpTitle:not(.boxEmpty):hover .boxDeleteBtn,.vpSubtitle:not(.boxEmpty):hover .boxDeleteBtn,.vpExtraText:hover .boxDeleteBtn{opacity:1;pointer-events:auto;}
-  .boxDeleteBtn:hover{border-color:var(--accent);color:var(--ink);}
+    text-align:center;cursor:pointer;opacity:.5;pointer-events:auto;transition:opacity .12s,transform .12s;z-index:1;}
+  .vpTitle.boxEmpty .boxDeleteBtn,.vpSubtitle.boxEmpty .boxDeleteBtn{opacity:0;pointer-events:none;}
+  .boxDeleteBtn:hover{opacity:1;transform:scale(1.15);border-color:var(--accent);color:var(--ink);}
   .app.presenting .boxDeleteBtn{display:none!important;}
   .app.presenting .vpSubtitle{pointer-events:none;cursor:default;}
   .guideLine{position:absolute;background:var(--accent);opacity:0;pointer-events:none;z-index:15;
