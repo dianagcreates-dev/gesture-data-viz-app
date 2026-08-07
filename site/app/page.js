@@ -3,8 +3,6 @@ import { TextMorph } from "@/components/TextMorph";
 import { SupernovaSwarm } from "@/components/SupernovaSwarm";
 import ScrambledText from "@/components/ScrambledText";
 
-const basePath = process.env.NODE_ENV === "production" ? "/gesture-data-viz-app" : "";
-
 export default function Home() {
   return (
     <main className="relative h-dvh overflow-hidden bg-[#03050c] text-[#eaf0fa]">
@@ -25,7 +23,7 @@ export default function Home() {
         className="fade-in-up absolute bottom-4 right-4 z-20 sm:bottom-6 sm:right-6"
         style={{ animationDelay: "3.3s" }}
       >
-        <a href={`${basePath}/app/index.html`} className="btn">
+        <a href="/app/index.html" className="btn">
           Try it now
         </a>
       </nav>
