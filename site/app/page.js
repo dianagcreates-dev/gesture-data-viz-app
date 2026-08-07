@@ -23,7 +23,7 @@ export default function Home() {
         className="fade-in-up absolute bottom-4 right-4 z-20 sm:bottom-6 sm:right-6"
         style={{ animationDelay: "3.3s" }}
       >
-        <a href="/app/index.html" className="btn">
+        <a href="/app" className="btn">
           Try it now
         </a>
       </nav>
