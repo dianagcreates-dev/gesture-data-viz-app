@@ -1,27 +1,13 @@
 import { CursorDrivenParticleTypography } from "@/components/CursorDrivenParticleTypography";
+import { TextMorph } from "@/components/TextMorph";
+import { SupernovaSwarm } from "@/components/SupernovaSwarm";
+import ScrambledText from "@/components/ScrambledText";
 
-const FEATURES = [
-  {
-    title: "Gesture control",
-    desc: "Point to rotate, open your palm to zoom, make a fist to reset, peace sign for the next slide, thumbs up for the last one. No mouse, no clicker.",
-  },
-  {
-    title: "Four 3D chart styles",
-    desc: "Nebula, Galaxy, Starlight, and Neural — particle-based 3D visualizations that turn a plain table of numbers into something worth looking at.",
-  },
-  {
-    title: "Built for presenting",
-    desc: "Multi-slide decks, custom titles, legends, callouts, and backgrounds — including a mesh-gradient editor for a background that's actually yours.",
-  },
-  {
-    title: "Runs in your browser",
-    desc: "No install, no account, no upload. Hand tracking happens locally on your device — your webcam feed never leaves your computer.",
-  },
-];
+const basePath = process.env.NODE_ENV === "production" ? "/gesture-data-viz-app" : "";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#03050c] text-[#eaf0fa]">
+    <main className="relative h-dvh overflow-hidden bg-[#03050c] text-[#eaf0fa]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -33,66 +19,80 @@ export default function Home() {
         }}
       />
 
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-28 pb-20 text-center sm:pt-36">
-        <span className="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-medium tracking-wide text-[#7e8fb0]">
-          Free · Browser-based · No account needed
-        </span>
+      <h1 className="sr-only">Experience Data in Motion.</h1>
 
-        <h1 className="sr-only">Experience Data in Motion.</h1>
-        <div className="mt-7 h-[160px] w-full sm:h-[240px]" aria-hidden="true">
-          <CursorDrivenParticleTypography
-            text="Experience Data in Motion."
-            fontSize={125}
-            fontFamily="Inter, sans-serif"
-            particleSize={1.4}
-            particleDensity={3}
-            dispersionStrength={18}
-            returnSpeed={0.08}
-            color="#5ad1c4"
-            className="min-h-0"
-          />
+      <nav
+        className="fade-in-up absolute bottom-4 right-4 z-20 sm:bottom-6 sm:right-6"
+        style={{ animationDelay: "3.3s" }}
+      >
+        <a href={`${basePath}/app/index.html`} className="btn">
+          Try it now
+        </a>
+      </nav>
+
+      <div className="relative grid h-full min-h-0 grid-cols-1 grid-rows-3 sm:grid-cols-2 sm:grid-rows-2">
+        {/* Divider lines — draw themselves in on entrance instead of appearing instantly */}
+        <div
+          className="line-grow-y pointer-events-none absolute inset-y-0 left-1/2 z-10 hidden w-0.5 -translate-x-1/2 bg-yellow-400 sm:block"
+          style={{ animationDelay: "0s" }}
+        />
+        <div
+          className="line-grow-x pointer-events-none absolute left-0 top-1/3 z-10 h-0.5 w-full bg-yellow-400 sm:top-1/2 sm:w-1/2"
+          style={{ animationDelay: "0.15s" }}
+        />
+        <div
+          className="line-grow-x pointer-events-none absolute left-0 top-2/3 z-10 h-0.5 w-full bg-yellow-400 sm:hidden"
+          style={{ animationDelay: "0.3s" }}
+        />
+
+        {/* Image */}
+        <div className="relative flex min-h-0 flex-col items-center justify-center gap-2 overflow-hidden bg-black p-3 sm:gap-3 sm:p-8">
+          <div className="h-full max-h-[130px] w-full sm:max-h-[210px]" aria-hidden="true">
+            <CursorDrivenParticleTypography
+              text="Experience"
+              fontSize={110}
+              fontFamily="Inter, sans-serif"
+              particleSize={1.2}
+              particleDensity={3}
+              dispersionStrength={14}
+              returnSpeed={0.08}
+              entranceScatter={50}
+              color="#ffffff"
+              className="min-h-0"
+            />
+          </div>
         </div>
 
-        <p className="mt-6 max-w-2xl text-lg text-[#9fb0cf] sm:text-xl">
-          A gesture-controlled 3D data visualization tool. Turn a table of
-          numbers into an interactive scene, then rotate, zoom, and step
-          through it using nothing but your webcam and your hand.
-        </p>
-
-        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
-          <a
-            href="app/"
-            className="rounded-full bg-[#5ad1c4] px-8 py-3 text-sm font-semibold uppercase tracking-wide text-[#062019] transition hover:brightness-95"
+        {/* Particles + DATA / IN MOTION, overlaid in one shared block */}
+        <div className="relative min-h-0 touch-none overflow-hidden bg-black sm:col-start-2 sm:row-start-1 sm:row-span-2">
+          <SupernovaSwarm className="absolute inset-0 h-full w-full" />
+          <div
+            className="fade-in-up pointer-events-none absolute inset-0 flex items-center justify-center p-3 sm:p-8"
+            style={{ color: "#ffffff", animationDelay: "1.3s" }}
           >
-            Launch the app
-          </a>
-          <span className="text-sm text-[#7e8fb0]">
-            Works best in Chrome or Edge, with a webcam
-          </span>
+            <TextMorph
+              words={["DATA", "IN MOTION"]}
+              className="text-6xl font-bold drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] sm:text-8xl"
+            />
+          </div>
+        </div>
+
+        {/* Text: description */}
+        <div className="relative flex min-h-0 flex-col items-center justify-center gap-2 overflow-hidden bg-black p-3 text-center sm:p-6">
+          <ScrambledText
+            radius={100}
+            duration={1.2}
+            speed={0.5}
+            scrambleChars=".:"
+            className="fade-in-up max-w-lg text-sm text-white sm:text-xl"
+            style={{ animationDelay: "2.3s" }}
+          >
+            Bring your data to life as an interactive particle visualization.
+            Present it with hand gestures and navigate your presentation
+            without touching a mouse or clicker.
+          </ScrambledText>
         </div>
       </div>
-
-      <section className="relative mx-auto max-w-5xl px-6 pb-28">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm"
-            >
-              <h3 className="text-base font-semibold text-[#eaf0fa]">
-                {f.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#8b9bbd]">
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <footer className="relative border-t border-white/10 px-6 py-8 text-center text-xs text-[#54648a]">
-        Built with Three.js and MediaPipe Hands.
-      </footer>
     </main>
   );
 }

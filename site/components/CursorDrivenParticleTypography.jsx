@@ -4,9 +4,14 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useRef } from "react";
 
 class Particle {
-  constructor(x, y, size, color, dispersion, returnSpd) {
-    this.x = x + (Math.random() - 0.5) * 10; // start with slight randomness
-    this.y = y + (Math.random() - 0.5) * 10;
+  constructor(x, y, size, color, dispersion, returnSpd, entranceScatter = 5) {
+    // Particles start scattered around their target and spring into place —
+    // entranceScatter controls how far the fly-in starts from (default is
+    // the original subtle jitter).
+    const angle = Math.random() * Math.PI * 2;
+    const distance = Math.random() * entranceScatter;
+    this.x = x + Math.cos(angle) * distance;
+    this.y = y + Math.sin(angle) * distance;
     this.originX = x;
     this.originY = y;
     this.vx = (Math.random() - 0.5) * 5;
@@ -77,6 +82,7 @@ export function CursorDrivenParticleTypography({
   particleDensity = 6,
   dispersionStrength = 15,
   returnSpeed = 0.08,
+  entranceScatter = 5,
   color,
 }) {
   const canvasRef = useRef(null);
@@ -109,8 +115,18 @@ export function CursorDrivenParticleTypography({
       canvas.height = containerHeight * dpr;
       canvas.style.width = `${containerWidth}px`;
       canvas.style.height = `${containerHeight}px`;
-
       ctx.scale(dpr, dpr);
+
+      // Keep the visible canvas untouched by fillText — sample the text
+      // shape on an offscreen canvas instead, or the crisp text flashes on
+      // screen for a frame before the particle loop takes over (this
+      // matters because ResizeObserver fires its first callback almost
+      // immediately, well before the startup delay below).
+      const offscreen = document.createElement("canvas");
+      offscreen.width = canvas.width;
+      offscreen.height = canvas.height;
+      const offCtx = offscreen.getContext("2d");
+      offCtx.scale(dpr, dpr);
 
       // Determine text color
       const computedStyle = window.getComputedStyle(container);
@@ -119,28 +135,28 @@ export function CursorDrivenParticleTypography({
       ctx.clearRect(0, 0, containerWidth, containerHeight);
 
       // Draw text to generate pixel map
-      ctx.fillStyle = textColor;
+      offCtx.fillStyle = textColor;
       // Responsive font size based on container width if text is large
       let effectiveFontSize = Math.min(fontSize, containerWidth * 0.15);
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      offCtx.textAlign = "center";
+      offCtx.textBaseline = "middle";
 
       // Shrink further if the actual measured text is wider than the
       // container — the heuristic above doesn't know the text's real
       // width, so long phrases can otherwise render clipped off-canvas.
-      ctx.font = `bold ${effectiveFontSize}px ${fontFamily}`;
-      const measuredWidth = ctx.measureText(text).width;
+      offCtx.font = `bold ${effectiveFontSize}px ${fontFamily}`;
+      const measuredWidth = offCtx.measureText(text).width;
       const maxWidth = containerWidth * 0.94;
       if (measuredWidth > maxWidth) {
         effectiveFontSize *= maxWidth / measuredWidth;
-        ctx.font = `bold ${effectiveFontSize}px ${fontFamily}`;
+        offCtx.font = `bold ${effectiveFontSize}px ${fontFamily}`;
       }
 
       // Draw standard text first to measure it
-      ctx.fillText(text, containerWidth / 2, containerHeight / 2);
+      offCtx.fillText(text, containerWidth / 2, containerHeight / 2);
 
       // Get pixel data
-      const textCoordinates = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const textCoordinates = offCtx.getImageData(0, 0, offscreen.width, offscreen.height);
       particles = [];
 
       // Create particles from text pixels
@@ -159,7 +175,8 @@ export function CursorDrivenParticleTypography({
                 particleSize,
                 textColor,
                 dispersionStrength,
-                returnSpeed
+                returnSpeed,
+                entranceScatter
               )
             );
           }
@@ -245,7 +262,17 @@ export function CursorDrivenParticleTypography({
       canvas.removeEventListener("touchend", handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [text, fontSize, fontFamily, particleSize, particleDensity, dispersionStrength, returnSpeed, color]);
+  }, [
+    text,
+    fontSize,
+    fontFamily,
+    particleSize,
+    particleDensity,
+    dispersionStrength,
+    returnSpeed,
+    entranceScatter,
+    color,
+  ]);
 
   return (
     <div
